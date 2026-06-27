@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FAFXAcademy – Trade Smarter. Grow Faster.</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+#home { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 100px 5% 80px; position: relative; overflow: hidden; }
+.hero-bg { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 3px; padding: 0 5%; opacity: 0.05; pointer-events: none; }
+.candle { background: var(--green); border-radius: 1px; flex: 1; animation: candleFlicker 3s ease-in-out infinite alternate; }
+@keyframes candleFlicker { from { transform: scaleY(0.85); } to { transform: scaleY(1.15); } }
+.hero-tag { font-family: var(--font-mono); font-size: 0.75rem; color: var(--green-light); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem; }
+.hero-tag::before { content: ''; display: inline-block; width: 32px; height: 1px; background: var(--green); }
+.hero-headline { font-family: var(--font-display); font-size: clamp(3.5rem, 10vw, 8.5rem); font-weight: 900; line-height: 0.9; text-transform: uppercase; max-width: 900px; margin-bottom: 1.8rem; }
+.hero-headline em { font-style: normal; color: var(--green); }
+.hero-headline .outline { -webkit-text-stroke: 2px var(--white); color: transparent; }
+.hero-sub { font-size: 1.05rem; color: var(--white-dim); max-width: 520px; line-height: 1.75; margin-bottom: 2.4rem; }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.hero-stats { display: flex; gap: 3rem; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.stat-num { font-family: var(--font-display); font-size: 2.4rem; font-weight: 900; color: var(--green-light); line-height: 1; }
+.stat-label { font-size: 0.72rem; color: var(--white-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.2rem; }
+
+/* TradingView section */
+#chart-section { background: var(--black-mid); padding: 60px 5%; }
+.chart-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.tv-widget-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+
+/* Why FAFX */
+#why { background: var(--black); }
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.why-icon { font-size: 2rem; margin-bottom: 1rem; }
+.why-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; }
+.why-text { font-size: 0.85rem; color: var(--white-dim); line-height: 1.7; }
+
+@media(max-width:900px) { .why-grid { grid-template-columns: 1fr; } .chart-header { flex-direction: column; align-items: flex-start; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="pages/about.html">About</a></li>
+    <li><a href="pages/courses.html">Courses</a></li>
+    <li><a href="pages/ea-products.html">EA Products</a></li>
+    <li><a href="pages/contact.html" class="nav-cta">Join Now</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="ticker-bar"><div class="ticker-track"></div></div>
+
+<section id="home">
+  <div class="hero-bg" id="candleGrid"></div>
+  <div class="hero-tag">FAFX Trading Academy — North. Nigeria</div>
+  <h1 class="hero-headline">
+    Trade With<br>
+    <em>Precision,</em><br>
+    <span class="outline">Grow</span> With Us.
+  </h1>
+  <p class="hero-sub">FAFX equips traders worldwide with the education, tools, and automated systems to trade Forex at a professional level — from from challenge to funded account.</p>
+  <div class="hero-actions">
+    <a href="pages/courses.html" class="btn-primary">Start Learning</a>
+    <a href="pages/ea-products.html" class="btn-outline">Explore Our EAs</a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="stat-num">2,400+</div><div class="stat-label">Traders Trained</div></div>
+    <div><div class="stat-num">14</div><div class="stat-label">Countries Reached</div></div>
+    <div><div class="stat-num">8+</div><div class="stat-label">EAs Built</div></div>
+    <div><div class="stat-num">XAUUSD</div><div class="stat-label">Primary Market</div></div>
+  </div>
+</section>
+
+<!-- LIVE CHART -->
+<div id="chart-section">
+  <div class="chart-header">
+    <div>
+      <div class="section-tag">Live Market</div>
+      <div class="section-title" style="font-size:2rem;">XAUUSD <span>Live Chart</span></div>
+    </div>
+    <a href="pages/courses.html" class="btn-sm">Learn to Read This →</a>
+  </div>
+  <div class="tv-widget-wrap">
+    <div class="tradingview-widget-container" style="height:420px;">
+      <div id="tradingview_chart"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+      <script type="text/javascript">
+      new TradingView.widget({
+        "width": "100%", "height": 420, "symbol": "OANDA:XAUUSD",
+        "interval": "1H", "timezone": "Africa/Lagos",
+        "theme": "dark", "style": "1", "locale": "en",
+        "toolbar_bg": "#111111", "enable_publishing": false,
+        "hide_side_toolbar": false, "allow_symbol_change": true,
+        "container_id": "tradingview_chart",
+        "overrides": { "paneProperties.background": "#0a0a0a", "paneProperties.backgroundType": "solid" }
+      });
+      </script>
+    </div>
+  </div>
+</div>
+
+<!-- WHY FAFX -->
+<section id="why">
+  <div class="section-header">
+    <div class="section-tag">Why Choose Us</div>
+    <h2 class="section-title">The FAFX <span>Difference</span></h2>
+  </div>
+  <div class="why-grid">
+    <div class="card reveal"><div class="why-icon">🎯</div><div class="why-title">Real Market Experience</div><p class="why-text">Every course and EA is built from live trading — not theory. FAFX was built in the Nigerian markets and refined on prop firm challenges.</p></div>
+    <div class="card reveal"><div class="why-icon">🤖</div><div class="why-title">Automation-First</div><p class="why-text">We don't just teach manual trading. We build Expert Advisors so your strategy runs 24/5, even when you can't watch the charts.</p></div>
+    <div class="card reveal"><div class="why-icon">🌍</div><div class="why-title">Global Community</div><p class="why-text">Connect with FAFX traders across 14+ countries. Weekly live sessions, signal discussions, and trade reviews in a growing community.</p></div>
+    <div class="card reveal"><div class="why-icon">📈</div><div class="why-title">Prop Firm Ready</div><p class="why-text">Our curriculum is designed to get you funded. FTMO, MyFundedFX, and similar programs are core to how we teach risk management.</p></div>
+    <div class="card reveal"><div class="why-icon">🏆</div><div class="why-title">Mentorship Access</div><p class="why-text">Direct access to Fahad and the FAFX team. 1-on-1 coaching, group calls, and trade reviews — not just video content.</p></div>
+    <div class="card reveal"><div class="why-icon">⚡</div><div class="why-title">XAUUSD Specialists</div><p class="why-text">Gold is our primary market. Deep liquidity, strong trends, and consistent volatility make XAUUSD ideal for our Perfect Order strategy.</p></div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">FA<span>FX</span></div>
+  <p class="footer-copy">© 2026 FAFX Trading Academy. All rights reserved.<br><small>Trading involves risk. Results shown are not guaranteed.</small></p>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="pages/about.html">About</a></li>
+    <li><a href="pages/courses.html">Courses</a></li>
+    <li><a href="pages/ea-products.html">EAs</a></li>
+    <li><a href="pages/contact.html">Contact</a></li>
+  </ul>
+</footer>
+
+<div class="toast"></div>
+<script src="js/main.js"></script>
+<script>
+  const grid = document.getElementById('candleGrid');
+  for (let i = 0; i < 50; i++) {
+    const c = document.createElement('div');
+    c.className = 'candle';
+    c.style.height = (Math.random()*60+20)+'%';
+    c.style.animationDelay = (Math.random()*3)+'s';
+    c.style.animationDuration = (Math.random()*2+2)+'s';
+    grid.appendChild(c);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>About – FAFX Trading Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+.about-img-box { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; height: 380px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; position: relative; overflow: hidden; }
+.avatar-ring { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--green); background: var(--green-dim); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+.founder-name { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; text-transform: uppercase; }
+.founder-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--green-light); letter-spacing: 0.1em; text-transform: uppercase; }
+.about-points { list-style: none; margin-top: 1.5rem; }
+.about-points li { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.8rem 0; border-bottom: 1px solid var(--white-faint); font-size: 0.9rem; color: var(--white-dim); }
+.about-points li::before { content: '→'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+.timeline { padding: 80px 5%; background: var(--black-mid); }
+.tl-items { display: flex; flex-direction: column; gap: 0; max-width: 700px; }
+.tl-item { display: grid; grid-template-columns: 120px 1fr; gap: 2rem; padding: 1.5rem 0; border-bottom: 1px solid var(--white-faint); align-items: start; }
+.tl-year { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: var(--green); }
+.tl-event { font-size: 0.9rem; color: var(--white-dim); line-height: 1.7; }
+.tl-event strong { color: var(--white); display: block; font-size: 1rem; margin-bottom: 0.2rem; }
+
+.stats-band { background: var(--green-dim); border-top: 1px solid var(--green); border-bottom: 1px solid var(--green); padding: 3rem 5%; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+.band-stat { text-align: center; }
+.band-num { font-family: var(--font-display); font-size: 3rem; font-weight: 900; color: var(--white); }
+.band-label { font-size: 0.78rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.08em; }
+
+@media(max-width:900px) { .about-grid { grid-template-columns: 1fr; gap: 2.5rem; } .tl-item { grid-template-columns: 80px 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="courses.html">Courses</a></li>
+    <li><a href="ea-products.html">EA Products</a></li>
+    <li><a href="contact.html" class="nav-cta">Join Now</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+<div class="ticker-bar"><div class="ticker-track"></div></div>
+
+<div class="page-banner">
+  <div class="section-tag">Our Story</div>
+  <h1>Built By <span>Traders</span>,<br>For Traders</h1>
+  <p>FAFX started in Nigeria from real market experience. We combine technical mastery and fundamental understanding, automated trading systems, and personal mentorship to build traders who understand the market at a structural level.</p>
+</div>
+
+<section style="background:var(--black);">
+  <div class="about-grid">
+    <div>
+      <div class="section-tag">The Founder</div>
+      <h2 class="section-title">Meet <span>Fahad</span></h2>
+      <p class="section-desc">A practicing nurse turned full-time trader and trading educator, Fahad built FAFX to share the systematic, data-driven approach to Forex trading that took years to develop. His background spans live prop firm trading, MQL5 EA development, and mentoring traders across Africa and beyond.</p>
+      <ul class="about-points">
+        <li>Specialist in XAUUSD Perfect Order pyramid strategies</li>
+        <li>Author of 8+ production Expert Advisors for MT4/MT5</li>
+        <li>Live prop firm trading experience (FTMO-style challenges)</li>
+        <li>Background in healthcare — disciplined, systematic mindset</li>
+        <li>Training traders across Nigeria, Ghana, Kenya, and beyond</li>
+      </ul>
+      <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        <a href="contact.html" class="btn-primary">Work With Fahad</a>
+        <a href="courses.html" class="btn-outline">View Courses</a>
+      </div>
+    </div>
+    <div class="about-img-box reveal">
+      <div class="avatar-ring">👤</div>
+      <div class="founder-name">Fahad</div>
+      <div class="founder-title">Founder, FAFX Trading Academy</div>
+      <div style="margin-top:1rem;font-family:var(--font-mono);font-size:0.68rem;color:var(--white-dim);text-align:center;padding:0 2rem;">
+        Forex Trader · EA Developer · Educator · Nigeria
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Band -->
+<div class="stats-band">
+  <div class="band-stat reveal"><div class="band-num">2,400+</div><div class="band-label">Traders Trained</div></div>
+  <div class="band-stat reveal"><div class="band-num">14</div><div class="band-label">Countries</div></div>
+  <div class="band-stat reveal"><div class="band-num">8+</div><div class="band-label">Expert Advisors</div></div>
+  <div class="band-stat reveal"><div class="band-num">5yrs+</div><div class="band-label">Market Experience</div></div>
+</div>
+
+<!-- Timeline -->
+<div class="timeline">
+  <div class="section-header">
+    <div class="section-tag">Our Journey</div>
+    <h2 class="section-title">The FAFX <span>Timeline</span></h2>
+  </div>
+  <div class="tl-items">
+    <div class="tl-item reveal"><div class="tl-year">2018</div><div class="tl-event"><strong>First Forex Account</strong>Opened first live account on XAUUSD. Lost money, learned faster. The systematic approach began here.</div></div>
+    <div class="tl-item reveal"><div class="tl-year">2020</div><div class="tl-event"><strong>Perfect Order Discovery</strong>Developed the Perfect Order EMA alignment strategy for XAUUSD M15. First consistently profitable system.</div></div>
+    <div class="tl-item reveal"><div class="tl-year">2021</div><div class="tl-event"><strong>First EA Built</strong>Wrote first Expert Advisor in MQL5. Automated the pyramid grid system and began backtesting on historical tick data.</div></div>
+    <div class="tl-item reveal"><div class="tl-year">2022</div><div class="tl-event"><strong>FAFX Brand Launched</strong>Started teaching 1-on-1. The FAFX brand was born to bring structured, honest trading education to African traders.</div></div>
+    <div class="tl-item reveal"><div class="tl-year">2023</div><div class="tl-event"><strong>Community Growth</strong>Expanded to group mentorship. Traders from Nigeria, Ghana, Kenya, and beyond joined the FAFX family.</div></div>
+    <div class="tl-item reveal"><div class="tl-year">2024</div><div class="tl-event"><strong>EA Product Line</strong>Launched POST PE Pro, HFT Scalper, Manual Panel, and Pyramid Grid EA as commercial products for MT5.</div></div>
+    <div class="tl-item reveal"><div class="tl-year">2026</div><div class="tl-event"><strong>FAFX Academy Online</strong>Full online platform launched. Courses, EAs, and mentorship now accessible to traders worldwide.</div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">FA<span>FX</span></div>
+  <p class="footer-copy">© 2026 FAFX Trading Academy. All rights reserved.<br><small>Trading involves risk. Results are not guaranteed.</small></p>
+  <ul class="footer-links">
+    <li><a href="../index.html">Home</a></li><li><a href="about.html">About</a></li>
+    <li><a href="courses.html">Courses</a></li><li><a href="ea-products.html">EAs</a></li><li><a href="contact.html">Contact</a></li>
+  </ul>
+</footer>
+<div class="toast"></div>
+<script src="../js/main.js"></script>
+</body>
+</html>

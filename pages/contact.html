@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Join Now – FAFX Trading Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+.contact-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 5rem; align-items: start; }
+
+/* Mentorship tiers */
+.tiers { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.tier { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.4rem 1.8rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; cursor: pointer; }
+.tier:hover, .tier.selected { border-color: var(--green); }
+.tier.featured { border-color: var(--green); background: rgba(9,135,81,0.08); }
+.tier-left {}
+.tier-name { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; text-transform: uppercase; }
+.tier-perks { font-size: 0.78rem; color: var(--white-dim); margin-top: 0.2rem; }
+.tier-price { font-family: var(--font-display); font-size: 1.7rem; font-weight: 900; color: var(--green-light); text-align: right; }
+.tier-price small { font-family: var(--font-body); font-size: 0.65rem; color: var(--white-dim); font-weight: 400; display: block; }
+.tier-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); background: none; flex-shrink: 0; margin-right: 1rem; transition: all 0.2s; position: relative; }
+.tier-radio::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--green); opacity: 0; transition: opacity 0.2s; }
+.tier.selected .tier-radio { border-color: var(--green); }
+.tier.selected .tier-radio::after { opacity: 1; }
+
+/* Contact info */
+.contact-info-boxes { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.info-box { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; transition: border-color 0.2s; }
+.info-box:hover { border-color: var(--green); }
+.info-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.info-label { font-size: 0.72rem; color: var(--white-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.info-value { font-size: 0.9rem; color: var(--white); font-weight: 500; }
+
+/* FAQ */
+.faq-section { background: var(--black-mid); padding: 80px 5%; }
+.faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; }
+.faq-item { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.faq-q { padding: 1.2rem 1.5rem; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.faq-q::after { content: '+'; color: var(--green); font-size: 1.2rem; flex-shrink: 0; transition: transform 0.2s; }
+.faq-item.open .faq-q::after { transform: rotate(45deg); }
+.faq-a { padding: 0 1.5rem; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; font-size: 0.84rem; color: var(--white-dim); line-height: 1.7; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.5rem 1.2rem; }
+
+@media(max-width:900px) { .contact-layout { grid-template-columns: 1fr; gap: 3rem; } .faq-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="courses.html">Courses</a></li>
+    <li><a href="ea-products.html">EA Products</a></li>
+    <li><a href="contact.html" class="nav-cta active">Join Now</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+<div class="ticker-bar"><div class="ticker-track"></div></div>
+
+<div class="page-banner">
+  <div class="section-tag">Mentorship & Contact</div>
+  <h1>Join The <span>FAFX</span> Community</h1>
+  <p>Get direct access to Fahad and the FAFX team. Weekly live sessions, trade reviews, and a growing global community of serious traders.</p>
+</div>
+
+<section style="background:var(--black);">
+  <div class="contact-layout">
+
+    <!-- Left: Mentorship + Contact Info -->
+    <div>
+      <div class="section-tag">Mentorship Plans</div>
+      <h2 class="section-title" style="font-size:2rem;">Choose Your <span>Plan</span></h2>
+      <p class="section-desc">Select a plan below — it will pre-fill your application form.</p>
+
+      <div class="tiers">
+        <div class="tier reveal" onclick="selectTier(this, 'Starter — $29/month')">
+          <div style="display:flex;align-items:center;">
+            <div class="tier-radio"></div>
+            <div class="tier-left">
+              <div class="tier-name">Starter</div>
+              <div class="tier-perks">Group community access · Weekly Q&A · Signal alerts</div>
+            </div>
+          </div>
+          <div class="tier-price">$29<small>/month</small></div>
+        </div>
+        <div class="tier featured selected reveal" onclick="selectTier(this, 'Pro Mentorship — $97/month')">
+          <div style="display:flex;align-items:center;">
+            <div class="tier-radio"></div>
+            <div class="tier-left">
+              <div class="tier-name">⭐ Pro Mentorship</div>
+              <div class="tier-perks">Live sessions · Trade reviews · 1 EA license included</div>
+            </div>
+          </div>
+          <div class="tier-price">$97<small>/month</small></div>
+        </div>
+        <div class="tier reveal" onclick="selectTier(this, 'Elite 1-on-1 — $250/month')">
+          <div style="display:flex;align-items:center;">
+            <div class="tier-radio"></div>
+            <div class="tier-left">
+              <div class="tier-name">Elite 1-on-1</div>
+              <div class="tier-perks">Private coaching · Custom strategy · Priority access</div>
+            </div>
+          </div>
+          <div class="tier-price">$250<small>/month</small></div>
+        </div>
+      </div>
+
+      <!-- Direct Contact -->
+      <div style="margin-top:2.5rem;">
+        <div class="section-tag">Reach Us Directly</div>
+        <div class="contact-info-boxes">
+          <a href="https://wa.me/+2348027193022" target="_blank" class="info-box">
+            <div class="info-icon" style="background:#25D366;">💬</div>
+            <div><div class="info-label">WhatsApp</div><div class="info-value">+234 800 000 0000</div></div>
+          </a>
+          <a href="https://t.me/FAFX_Trading" target="_blank" class="info-box">
+            <div class="info-icon" style="background:#229ED9;">✈️</div>
+            <div><div class="info-label">Telegram</div><div class="info-value">@FAFX_Trading</div></div>
+          </a>
+          <a href="mailto:aafahd106@gmail.com" class="info-box">
+            <div class="info-icon" style="background:var(--green-dim);border:1px solid var(--green);">✉️</div>
+            <div><div class="info-label">Email</div><div class="info-value">hello@fafx.trade</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Form -->
+    <div class="reveal">
+      <div class="section-tag">Application Form</div>
+      <h2 class="section-title" style="font-size:2rem;">Ready To <span>Start?</span></h2>
+      <p class="section-desc" style="margin-bottom:1.8rem;">Fill in your details and we'll reach out within 24 hours.</p>
+
+      <form id="contactForm" action="https://formspree.io/f/xvzjavvr" method="POST">
+        <input type="hidden" name="selected_plan" id="planField" value="Pro Mentorship — $97/month"/>
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" name="name" class="form-input" placeholder="Your full name" required/>
+          <span class="form-error">Name is required</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" name="email" class="form-input" placeholder="you@example.com" required/>
+            <span class="form-error">Valid email required</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp Number</label>
+            <input type="tel" name="whatsapp" class="form-input" placeholder="+234 800 000 0000"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country *</label>
+          <input type="text" name="country" class="form-input" placeholder="Where are you trading from?" required/>
+          <span class="form-error">Country is required</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Selected Plan</label>
+          <input type="text" class="form-input" id="planDisplay" value="Pro Mentorship — $97/month" readonly style="opacity:0.7;"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trading Experience Level</label>
+          <select name="experience" class="form-select">
+            <option value="">Select your level</option>
+            <option>Complete Beginner</option>
+            <option>Intermediate (1-2 years)</option>
+            <option>Experienced (3+ years)</option>
+            <option>Currently funded / prop trader</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">What do you want to achieve?</label>
+          <textarea name="goal" class="form-textarea" placeholder="e.g. Pass a prop firm challenge, build an EA, trade Gold consistently…"></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;" id="submitBtn">Send Application</button>
+        <p style="font-size:0.72rem;color:var(--white-dim);margin-top:0.8rem;text-align:center;">We respond within 24 hours. No spam, ever.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <div class="section-header">
+    <div class="section-tag">FAQ</div>
+    <h2 class="section-title">Common <span>Questions</span></h2>
+  </div>
+  <div class="faq-grid">
+    <div class="faq-item reveal"><div class="faq-q">Do I need trading experience to join?</div><div class="faq-a">No. We have courses and mentorship plans designed for complete beginners. The Starter plan and Foundations course are perfect starting points.</div></div>
+    <div class="faq-item reveal"><div class="faq-q">What broker do you recommend?</div><div class="faq-a">We primarily use and recommend Exness for its low spreads on XAUUSD and fast execution — ideal for all our EAs and strategies. XM is also supported.</div></div>
+    <div class="faq-item reveal"><div class="faq-q">Are the EAs for MT4 or MT5?</div><div class="faq-a">All current FAFX EAs are built for MetaTrader 5 (MT5). If you need an MT4 version, contact us — some can be ported on request.</div></div>
+    <div class="faq-item reveal"><div class="faq-q">How do I receive the EA after purchase?</div><div class="faq-a">After payment is confirmed, we'll send the .ex5 file and full installation instructions to your email and WhatsApp within 24 hours.</div></div>
+    <div class="faq-item reveal"><div class="faq-q">Is mentorship conducted live or recorded?</div><div class="faq-a">Pro and Elite plans include weekly live sessions via Zoom/Telegram. All sessions are recorded and available for replay within 48 hours.</div></div>
+    <div class="faq-item reveal"><div class="faq-q">Can I cancel my mentorship plan?</div><div class="faq-a">Yes. Mentorship plans are month-to-month. You can cancel anytime with no penalty. Just send us a message before your next billing date.</div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">FA<span>FX</span></div>
+  <p class="footer-copy">© 2026 FAFX Trading Academy. All rights reserved.<br><small>Trading involves risk. Results are not guaranteed.</small></p>
+  <ul class="footer-links">
+    <li><a href="../index.html">Home</a></li><li><a href="about.html">About</a></li>
+    <li><a href="courses.html">Courses</a></li><li><a href="ea-products.html">EAs</a></li><li><a href="contact.html">Contact</a></li>
+  </ul>
+</footer>
+<div class="toast"></div>
+<script src="../js/main.js"></script>
+<script>
+// Tier selector
+function selectTier(el, plan) {
+  document.querySelectorAll('.tier').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('planField').value = plan;
+  document.getElementById('planDisplay').value = plan;
+}
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    item.classList.toggle('open');
+  });
+});
+
+// Form submit
+document.getElementById('contactForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  if (!validateForm(this)) return;
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  try {
+    const res = await fetch(this.action, { method:'POST', body: new FormData(this), headers: { 'Accept':'application/json' } });
+    if (res.ok) {
+      showToast('✅ Application sent! Fahad will reach out within 24hrs.');
+      this.reset();
+      document.getElementById('planDisplay').value = 'Pro Mentorship — $97/month';
+    } else { showToast('⚠️ Something went wrong. Please WhatsApp us directly.'); }
+  } catch { showToast('⚠️ Network error. Please WhatsApp us directly.'); }
+  btn.textContent = 'Send Application'; btn.disabled = false;
+});
+</script>
+</body>
+</html>
