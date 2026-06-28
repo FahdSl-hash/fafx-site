@@ -58,7 +58,31 @@
   </ul>
   <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
 </nav>
-<div class="ticker-bar"><div class="ticker-track"></div></div>
+<!-- STICKY LIVE TICKER -->
+<div class="ticker-bar">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        { "proName": "OANDA:XAUUSD",    "title": "Gold" },
+        { "proName": "FX:EURUSD",        "title": "EUR/USD" },
+        { "proName": "FX:GBPUSD",        "title": "GBP/USD" },
+        { "proName": "FX:USDJPY",        "title": "USD/JPY" },
+        { "proName": "FX:AUDUSD",        "title": "AUD/USD" },
+        { "proName": "FX:USDCAD",        "title": "USD/CAD" },
+        { "proName": "BINANCE:BTCUSDT",  "title": "BTC/USDT" },
+        { "proName": "BINANCE:ETHUSDT",  "title": "ETH/USDT" }
+      ],
+      "showSymbolLogo": false,
+      "isTransparent": true,
+      "displayMode": "compact",
+      "colorTheme": "dark",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</div>
 
 <div class="page-banner">
   <div class="section-tag">Mentorship & Contact</div>
