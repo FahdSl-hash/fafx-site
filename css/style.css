@@ -89,6 +89,8 @@ nav {
   background: #0a0a0a;
   border-bottom: 1px solid var(--green);
   overflow: hidden; 
+  line-height: 0;  
+  font-size: 0; 
 }
 
 .ticker-bar iframe {
@@ -98,6 +100,15 @@ nav {
   border: none;
 }
 
+.ticker-bar iframe {
+  display: block !important;
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  vertical-align: top !important;
+}
 
 
 
