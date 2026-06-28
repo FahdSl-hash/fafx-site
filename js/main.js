@@ -58,6 +58,10 @@ function validateForm(formEl) {
   return valid;
 }
 
+
+
+
+/*
 // Ticker
 function buildTicker() {
   const pairs = [
@@ -78,6 +82,10 @@ function buildTicker() {
   track.innerHTML = html;
 }
 buildTicker();
+*/
+
+
+
 
 // Float buttons — UPDATE with your real WhatsApp number and Telegram username
 function buildFloat() {
