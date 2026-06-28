@@ -14,7 +14,7 @@
   --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --nav-height: 64px;
-  --ticker-height: 36px;
+  --ticker-height: 46px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
