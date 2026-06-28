@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FAFX – You're Offline</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0a;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+  .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    margin-bottom: 2rem;
+  }
+  .logo span { color: #098751; }
+  .icon { font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.6; }
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  h1 span { color: #098751; }
+  p {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 380px;
+    margin-bottom: 2rem;
+  }
+  .btn {
+    background: #098751;
+    color: #fff;
+    padding: 0.85rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn:hover { background: #0bb368; }
+  .tips {
+    margin-top: 3rem;
+    padding: 1.5rem 2rem;
+    background: #161616;
+    border: 1px solid rgba(9,135,81,0.25);
+    border-radius: 8px;
+    max-width: 400px;
+    text-align: left;
+  }
+  .tips-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #098751;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.06em;
+  }
+  .tips ul { list-style: none; }
+  .tips li {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.6);
+    padding: 0.3rem 0;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .tips li::before { content: '→'; color: #098751; }
+</style>
+</head>
+<body>
+  <div class="logo">FA<span>FX</span></div>
+  <div class="icon">📡</div>
+  <h1>You're <span>Offline</span></h1>
+  <p>It looks like you've lost your internet connection. Reconnect and come back to keep learning and trading with FAFX.</p>
+  <button class="btn" onclick="window.location.reload()">Try Again</button>
+
+  <div class="tips">
+    <div class="tips-title">While you wait...</div>
+    <ul>
+      <li>Review your trade journal and notes</li>
+      <li>Practice chart reading on your MT5</li>
+      <li>Check your EA settings and parameters</li>
+      <li>Plan your sessions for the week ahead</li>
+    </ul>
+  </div>
+</body>
+</html>
