@@ -88,6 +88,7 @@ nav {
   height: var(--ticker-height);
   background: #0a0a0a;
   border-bottom: 1px solid var(--green);
+  overflow: hidden; 
 }
 
 .ticker-bar iframe {
