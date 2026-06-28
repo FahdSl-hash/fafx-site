@@ -79,6 +79,7 @@ nav {
 .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); border-radius: 2px; }
 
 /* ─── STICKY LIVE TICKER ─── */
+/* ─── STICKY LIVE TICKER ─── */
 .ticker-bar {
   position: fixed;
   top: var(--nav-height);
@@ -87,8 +88,19 @@ nav {
   height: var(--ticker-height);
   background: #0a0a0a;
   border-bottom: 1px solid var(--green);
-  overflow: hidden;
 }
+
+.ticker-bar iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: none;
+}
+
+
+
+
+
 
 /* TradingView ticker widget fills the bar */
 .ticker-bar .tradingview-widget-container {
