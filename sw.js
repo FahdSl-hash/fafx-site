@@ -15,6 +15,10 @@ const ASSETS_TO_CACHE = [
   '/offline.html',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
+  '/pages/admission.html',
+  '/pages/login.html',
+  '/pages/admin.html',
+  '/js/supabase-client.js',
 ];
 
 // ── Install: cache all core assets ──
