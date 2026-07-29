@@ -3,7 +3,7 @@
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 // TODO: replace with your real project values (Supabase Dashboard → Project Settings → API)
-const SUPABASE_URL = 'https://qbfxwnbpjwuqtqzhmnca.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://qbfxwnbpjwuqtqzhmnca.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZnh3bmJwand1cXRxemhtbmNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMTk2NzYsImV4cCI6MjEwMDg5NTY3Nn0.r7DPgRI3h7oUzJcatf6OvyQ6WtGL_xux5AgsdYcNITk';
 
 const fafxDB = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
