@@ -9,16 +9,16 @@ const ASSETS_TO_CACHE = [
   '/pages/courses.html',
   '/pages/ea-products.html',
   '/pages/contact.html',
+  '/pages/admission.html',
+  '/pages/login.html',
+  '/pages/admin.html',
   '/css/style.css',
   '/js/main.js',
+  '/js/supabase-client.js',
   '/manifest.json',
   '/offline.html',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
-  '/pages/admission.html',
-  '/pages/login.html',
-  '/pages/admin.html',
-  '/js/supabase-client.js',
 ];
 
 // ── Install: cache all core assets ──
