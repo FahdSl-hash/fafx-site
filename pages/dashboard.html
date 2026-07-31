@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#098751"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FAFX"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg"/>
+  <link rel="shortcut icon" href="../favicon/favicon.svg"/>
+<title>Dashboard – FAFX Trading Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+.gate-msg { text-align: center; padding: 6rem 1rem; }
+.dash-panel { display: none; }
+
+/* Profile summary bar */
+.profile-bar { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+.profile-left { display: flex; align-items: center; gap: 1.2rem; }
+.profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--green-dim); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; flex-shrink: 0; }
+.profile-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+.profile-meta { font-size: 0.78rem; color: var(--white-dim); font-family: var(--font-mono); margin-top: 0.15rem; }
+.profile-tier { font-family: var(--font-mono); font-size: 0.68rem; background: var(--green-dim); color: var(--green-light); border: 1px solid var(--green); padding: 0.3rem 0.8rem; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Quick actions */
+.quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+.action-card { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-decoration: none; display: flex; flex-direction: column; gap: 0.5rem; transition: border-color 0.2s, transform 0.2s; }
+.action-card:hover { border-color: var(--green); transform: translateY(-3px); }
+.action-icon { font-size: 1.6rem; }
+.action-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; text-transform: uppercase; color: var(--white); }
+.action-desc { font-size: 0.78rem; color: var(--white-dim); line-height: 1.5; }
+.action-card.live-cta { border-color: var(--green); background: rgba(9,135,81,0.08); position: relative; }
+.live-pulse-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green); margin-right:0.4rem; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* Course progress */
+.course-progress-card { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.4rem 1.6rem; margin-bottom: 1rem; }
+.course-progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; }
+.course-progress-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; text-transform: uppercase; }
+.course-progress-pct { font-family: var(--font-mono); font-size: 0.78rem; color: var(--green-light); }
+.progress-bar-track { height: 6px; background: var(--white-faint); border-radius: 3px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.3s; }
+
+/* EA license cards */
+.ea-license-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+.license-card { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.4rem; }
+.license-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.3rem; }
+.license-key { font-family: var(--font-mono); font-size: 0.72rem; color: var(--white-dim); background: var(--black); padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid var(--border); word-break: break-all; margin: 0.5rem 0; }
+.license-status { font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 3px; display: inline-block; }
+.license-status.active { color: var(--green-light); border: 1px solid var(--green); }
+
+.state-msg { text-align: center; color: var(--white-dim); font-size: 0.85rem; padding: 2rem; }
+
+@media(max-width:900px) { .quick-actions { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="courses.html">Courses</a></li>
+    <li><a href="ea-products.html">EA Products</a></li>
+    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+    <li><a href="#" id="logoutLink" class="nav-cta">Log Out</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="page-banner" style="padding-top: 90px;">
+  <div class="section-tag">Student Area</div>
+  <h1>Your <span>Dashboard</span></h1>
+  <p>Track your courses, EA licenses, and jump into the community room.</p>
+</div>
+
+<div class="gate-msg" id="gateMsg">
+  <p class="section-desc" style="margin:0 auto;">Checking your access…</p>
+</div>
+
+<div class="dash-panel" id="dashPanel">
+
+  <section style="background:var(--black); padding-top:0;">
+    <div class="profile-bar reveal">
+      <div class="profile-left">
+        <div class="profile-avatar" id="profileAvatar">T</div>
+        <div>
+          <div class="profile-name" id="profileName">Trader</div>
+          <div class="profile-meta" id="profileMeta">FAFX/—</div>
+        </div>
+      </div>
+      <div class="profile-tier" id="profileTier">Free</div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <a href="community.html" class="action-card live-cta" id="communityCard">
+        <div class="action-icon">💬</div>
+        <div class="action-title" id="communityCardTitle">Community Room</div>
+        <div class="action-desc" id="communityCardDesc">Chat with other traders, share charts, and join live sessions.</div>
+      </a>
+      <a href="courses.html" class="action-card">
+        <div class="action-icon">📚</div>
+        <div class="action-title">Browse Courses</div>
+        <div class="action-desc">Explore the full FAFX course library and enroll in new tracks.</div>
+      </a>
+      <a href="ea-products.html" class="action-card">
+        <div class="action-icon">🤖</div>
+        <div class="action-title">EA Products</div>
+        <div class="action-desc">Get a new Expert Advisor license or manage the ones you own.</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- COURSE PROGRESS -->
+  <section style="background:var(--black-mid);">
+    <div class="section-tag">Learning</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Your <span>Courses</span></h2>
+    <div id="coursesContainer"><div class="state-msg">Loading your courses…</div></div>
+  </section>
+
+  <!-- EA LICENSES -->
+  <section style="background:var(--black);">
+    <div class="section-tag">Automation</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Your <span>EA Licenses</span></h2>
+    <div class="ea-license-grid" id="licensesContainer"><div class="state-msg">Loading your licenses…</div></div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="footer-logo">FA<span>FX</span></div>
+  <p class="footer-copy">© 2026 FAFX Trading Academy. All rights reserved.</p>
+  <ul class="footer-links">
+    <li><a href="../index.html">Home</a></li><li><a href="about.html">About</a></li>
+    <li><a href="courses.html">Courses</a></li><li><a href="ea-products.html">EAs</a></li>
+    <li><a href="community.html">Community</a></li>
+  </ul>
+</footer>
+<div class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(async function () {
+  const session = await fafxRequireLogin('../login.html');
+  if (!session) return;
+
+  const profile = await fafxGetProfile();
+  document.getElementById('gateMsg').style.display = 'none';
+  document.getElementById('dashPanel').style.display = 'block';
+
+  document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); fafxLogout(); });
+
+  // ── Profile summary ──
+  const name = profile?.full_name || 'Trader';
+  document.getElementById('profileAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileMeta').textContent = profile?.admission_number || '—';
+  document.getElementById('profileTier').textContent = profile?.mentorship_tier || 'Free';
+
+  // ── Live session check → highlight the Community card if something's live ──
+  const { data: liveSession } = await fafxDB
+    .from('live_sessions')
+    .select('title')
+    .eq('status', 'live')
+    .order('scheduled_start', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (liveSession) {
+    document.getElementById('communityCardTitle').innerHTML = '<span class="live-pulse-dot"></span>Community Room';
+    document.getElementById('communityCardDesc').textContent = `🔴 Live now: ${liveSession.title}`;
+  }
+
+  // ── Enrolled courses ──
+  // ASSUMPTION: enrollments(student_id, course_id, progress_percent) + courses(id, title)
+  // If your actual column names differ, send me schema.sql and I'll adjust this query.
+  const { data: enrollments, error: enrollError } = await fafxDB
+    .from('enrollments')
+    .select('id, progress_percent, courses ( id, title )')
+    .eq('student_id', profile.id);
+
+  const coursesContainer = document.getElementById('coursesContainer');
+  if (enrollError) {
+    coursesContainer.innerHTML = '<div class="state-msg">Could not load courses.</div>';
+    console.error(enrollError);
+  } else if (!enrollments || !enrollments.length) {
+    coursesContainer.innerHTML = `<div class="state-msg">You're not enrolled in any courses yet. <a href="courses.html" style="color:var(--green-light);">Browse the library →</a></div>`;
+  } else {
+    coursesContainer.innerHTML = enrollments.map(e => `
+      <div class="course-progress-card">
+        <div class="course-progress-top">
+          <div class="course-progress-title">${escapeHtml(e.courses?.title || 'Course')}</div>
+          <div class="course-progress-pct">${e.progress_percent || 0}% complete</div>
+        </div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${e.progress_percent || 0}%;"></div></div>
+      </div>
+    `).join('');
+  }
+
+  // ── EA licenses ──
+  // ASSUMPTION: ea_licenses(student_id, ea_name, license_key, status)
+  // If your actual column names differ, send me schema.sql and I'll adjust this query.
+  const { data: licenses, error: licenseError } = await fafxDB
+    .from('ea_licenses')
+    .select('id, ea_name, license_key, status')
+    .eq('student_id', profile.id);
+
+  const licensesContainer = document.getElementById('licensesContainer');
+  if (licenseError) {
+    licensesContainer.innerHTML = '<div class="state-msg">Could not load licenses.</div>';
+    console.error(licenseError);
+  } else if (!licenses || !licenses.length) {
+    licensesContainer.innerHTML = `<div class="state-msg">No EA licenses yet. <a href="ea-products.html" style="color:var(--green-light);">Browse EAs →</a></div>`;
+  } else {
+    licensesContainer.innerHTML = licenses.map(l => `
+      <div class="license-card">
+        <div class="license-name">${escapeHtml(l.ea_name)}</div>
+        <div class="license-key">${escapeHtml(l.license_key || 'Pending issuance')}</div>
+        <span class="license-status active">${escapeHtml(l.status || 'active')}</span>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[FAFX] SW registered:', reg.scope))
+      .catch(err => console.log('[FAFX] SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
