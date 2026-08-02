@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#098751"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FAFX"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg"/>
+  <link rel="shortcut icon" href="../favicon/favicon.svg"/>
+<title>Video Tutorials – FAFX Trading Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+.gate-msg { text-align: center; padding: 6rem 1rem; }
+.tut-panel { display: none; }
+.state-msg { text-align: center; color: var(--white-dim); font-size: 0.85rem; padding: 2rem; }
+
+.tutorials-toolbar { display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.search-input { max-width: 280px; }
+
+.filter-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.filter-btn { background: var(--white-faint); color: var(--white-dim); border: 1px solid var(--border); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em; }
+.filter-btn.active, .filter-btn:hover { background: var(--green); color: var(--white); border-color: var(--green); }
+
+.video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+.video-card { background: var(--black-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+.video-card:hover { border-color: var(--green); }
+.video-thumb-wrap { position: relative; aspect-ratio: 16/9; background: #000; cursor: pointer; }
+.video-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-thumb-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+.play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); transition: background 0.2s; }
+.video-thumb-wrap:hover .play-overlay { background: rgba(0,0,0,0.15); }
+.play-btn { width: 54px; height: 54px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; padding-left: 4px; }
+.video-info { padding: 1rem 1.2rem; }
+.video-course-tag { font-family: var(--font-mono); font-size: 0.62rem; color: var(--green-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; display: inline-block; }
+.video-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.3rem; line-height: 1.2; }
+.video-desc { font-size: 0.8rem; color: var(--white-dim); line-height: 1.55; }
+
+@media(max-width:900px) { .tutorials-toolbar { flex-direction: column; align-items: stretch; } .search-input { max-width: none; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="courses.html">Courses</a></li>
+    <li><a href="ea-products.html">EA Products</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="tutorials.html" class="active">Tutorials</a></li>
+    <li><a href="#" id="logoutLink" class="nav-cta">Log Out</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="page-banner" style="padding-top: 90px;">
+  <div class="section-tag">Student Area</div>
+  <h1>Video <span>Tutorials</span></h1>
+  <p>Short lessons grouped by course. New videos are added regularly — check back often.</p>
+</div>
+
+<div class="gate-msg" id="gateMsg">
+  <p class="section-desc" style="margin:0 auto;">Checking your access…</p>
+</div>
+
+<div class="tut-panel" id="tutPanel">
+  <section style="background:var(--black);">
+    <div class="tutorials-toolbar">
+      <div class="filter-bar" id="tabBar"></div>
+      <input type="text" id="searchInput" class="form-input search-input" placeholder="Search tutorials…"/>
+    </div>
+    <div class="video-grid" id="videoGrid"><div class="state-msg">Loading tutorials…</div></div>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-logo">FA<span>FX</span></div>
+  <p class="footer-copy">© 2026 FAFX Trading Academy. All rights reserved.</p>
+  <ul class="footer-links">
+    <li><a href="../index.html">Home</a></li><li><a href="about.html">About</a></li>
+    <li><a href="courses.html">Courses</a></li><li><a href="ea-products.html">EAs</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+  </ul>
+</footer>
+<div class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(async function () {
+  const session = await fafxRequireLogin('../login.html');
+  if (!session) return;
+
+  document.getElementById('gateMsg').style.display = 'none';
+  document.getElementById('tutPanel').style.display = 'block';
+  document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); fafxLogout(); });
+
+  let courses = [];
+  let videos = [];
+  let activeCourseId = 'all';
+  let searchTerm = '';
+
+  const { data: courseData, error: courseErr } = await fafxDB
+    .from('courses').select('id, title').order('title', { ascending: true });
+  if (!courseErr) courses = courseData || [];
+
+  const { data: videoData, error: videoErr } = await fafxDB
+    .from('tutorial_videos')
+    .select('id, title, description, youtube_id, sort_order, course_id, courses ( title )')
+    .order('sort_order', { ascending: true });
+
+  const gridEl = document.getElementById('videoGrid');
+
+  if (videoErr) {
+    gridEl.innerHTML = '<div class="state-msg">Could not load tutorials.</div>';
+    console.error(videoErr);
+    return;
+  }
+
+  videos = videoData || [];
+  buildTabs();
+  render();
+
+  function buildTabs() {
+    const tabBar = document.getElementById('tabBar');
+    // course_id from Supabase is numeric (bigint) — normalize to string so tab
+    // matching against dataset.tab (always a string) works reliably.
+    const usedCourseIds = new Set(videos.map(v => String(v.course_id)));
+    const tabs = [{ id: 'all', title: 'All' }].concat(
+      courses.filter(c => usedCourseIds.has(String(c.id))).map(c => ({ id: String(c.id), title: c.title }))
+    );
+    tabBar.innerHTML = tabs.map(t =>
+      `<button class="filter-btn ${t.id === 'all' ? 'active' : ''}" data-tab="${t.id}">${escapeHtml(t.title)}</button>`
+    ).join('');
+    tabBar.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCourseId = btn.dataset.tab;
+        render();
+      });
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchTerm = e.target.value.trim().toLowerCase();
+    render();
+  });
+
+  function render() {
+    let list = videos;
+    if (activeCourseId !== 'all') list = list.filter(v => String(v.course_id) === activeCourseId);
+    if (searchTerm) {
+      list = list.filter(v =>
+        (v.title || '').toLowerCase().includes(searchTerm) ||
+        (v.description || '').toLowerCase().includes(searchTerm)
+      );
+    }
+
+    if (!list.length) {
+      gridEl.innerHTML = '<div class="state-msg">No tutorials found.</div>';
+      return;
+    }
+
+    gridEl.innerHTML = list.map(v => `
+      <div class="video-card">
+        <div class="video-thumb-wrap" data-yt="${escapeHtml(v.youtube_id)}">
+          <img src="https://img.youtube.com/vi/${encodeURIComponent(v.youtube_id)}/hqdefault.jpg" alt="${escapeHtml(v.title)}"/>
+          <div class="play-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="video-info">
+          <span class="video-course-tag">${escapeHtml(v.courses?.title || 'General')}</span>
+          <div class="video-title">${escapeHtml(v.title)}</div>
+          ${v.description ? `<div class="video-desc">${escapeHtml(v.description)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    gridEl.querySelectorAll('.video-thumb-wrap').forEach(wrap => {
+      wrap.addEventListener('click', function handler() {
+        const id = wrap.dataset.yt;
+        wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1" title="tutorial video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      }, { once: true });
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : str;
+    return div.innerHTML;
+  }
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[FAFX] SW registered:', reg.scope))
+      .catch(err => console.log('[FAFX] SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>

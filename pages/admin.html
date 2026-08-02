@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#098751"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FAFX"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg"/>
+  <link rel="shortcut icon" href="../favicon/favicon.svg"/>
+<title>Admin – FAFX Trading Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+.admin-panel { display: none; }
+.gen-row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.gen-row .form-group { margin-bottom: 0; flex: 1; min-width: 160px; }
+.codes-output { display: none; margin-top: 1.5rem; background: var(--black-card); border: 1px solid var(--green); border-radius: 8px; padding: 1.5rem; }
+.codes-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.code-chip { font-family: var(--font-mono); font-size: 0.8rem; background: var(--white-faint); border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 4px; }
+
+.data-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+table.data-table th { background: var(--black-card); color: var(--green-light); text-align: left; padding: 0.75rem 1rem; font-family: var(--font-mono); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.08em; white-space: nowrap; border-bottom: 1px solid var(--border); }
+table.data-table td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--white-faint); color: var(--white-dim); white-space: nowrap; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: rgba(9,135,81,0.05); }
+.admin-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.gate-msg { text-align: center; padding: 6rem 1rem; }
+
+/* Status badges — Channel/Live Session management */
+.status-badge { font-family: var(--font-mono); font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid; white-space: nowrap; }
+.status-scheduled { color: var(--green-light); border-color: var(--green); background: rgba(9,135,81,0.08); }
+.status-live { color: #fff; border-color: var(--green); background: var(--green); }
+.status-ended { color: var(--white-dim); border-color: var(--border); background: transparent; }
+.status-cancelled { color: #f87171; border-color: #f87171; background: rgba(248,113,113,0.08); }
+.row-actions { display: flex; gap: 0.4rem; }
+.row-actions button { font-size: 0.7rem; padding: 0.3rem 0.7rem; }
+
+/* Modal — used for editing tutorial videos */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--black-card); border: 1px solid var(--green); border-radius: 10px; padding: 2.5rem; max-width: 480px; width: 100%; position: relative; transform: translateY(30px); transition: transform 0.25s; max-height: 90vh; overflow-y: auto; }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--white-dim); font-size: 1.5rem; cursor: pointer; line-height: 1; }
+.modal-close:hover { color: var(--white); }
+.modal-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; text-transform: uppercase; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="admin.html" class="active">Admin</a></li>
+    <li><a href="#" id="logoutLink" class="nav-cta">Log Out</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="page-banner" style="padding-top: 90px;">
+  <div class="section-tag">Admin Only</div>
+  <h1>FAFX <span>Control Room</span></h1>
+  <p>Generate admission codes, manage student records, and run the community room.</p>
+</div>
+
+<div class="gate-msg" id="gateMsg">
+  <p class="section-desc" style="margin:0 auto;">Checking admin access…</p>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+
+  <!-- CODE GENERATOR -->
+  <section style="background:var(--black);">
+    <div class="section-tag">Admission Codes</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Generate <span>Codes</span></h2>
+    <div class="gen-row">
+      <div class="form-group">
+        <label class="form-label">How many codes?</label>
+        <input type="number" id="genCount" class="form-input" value="1" min="1" max="200"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Set / Intake No.</label>
+        <input type="text" id="genSetNumber" class="form-input" value="01" maxlength="4"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note (optional)</label>
+        <input type="text" id="genNote" class="form-input" placeholder="e.g. Pro Mentorship — July batch"/>
+      </div>
+      <button class="btn-primary" id="generateBtn">Generate</button>
+    </div>
+    <div class="codes-output" id="codesOutput">
+      <div class="section-tag" style="margin-bottom:0.5rem;">Generated — share these one at a time</div>
+      <div class="codes-list" id="codesList"></div>
+      <button class="btn-sm" id="copyAllBtn">Copy All</button>
+    </div>
+  </section>
+
+  <!-- ADMISSIONS TABLE -->
+  <section style="background:var(--black-mid);">
+    <div class="admin-toolbar">
+      <div>
+        <div class="section-tag">Records</div>
+        <h2 class="section-title" style="font-size:1.9rem;">All <span>Admissions</span></h2>
+      </div>
+      <button class="btn-outline" id="exportCsvBtn">Export CSV</button>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table" id="admissionsTable">
+        <thead>
+          <tr>
+            <th>Admission #</th><th>Name</th><th>Email</th><th>WhatsApp</th>
+            <th>Country</th><th>Experience</th><th>Mentorship</th><th>Joined</th>
+          </tr>
+        </thead>
+        <tbody id="admissionsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- UNUSED CODES TABLE -->
+  <section style="background:var(--black);">
+    <div class="section-tag">Outstanding</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Unused <span>Codes</span></h2>
+    <div class="data-table-wrap">
+      <table class="data-table" id="unusedTable">
+        <thead><tr><th>Code</th><th>Set</th><th>Note</th><th>Created</th></tr></thead>
+        <tbody id="unusedBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- COMMUNITY ROOM: CHANNEL MANAGEMENT -->
+  <section style="background:var(--black-mid);">
+    <div class="section-tag">Community Room</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Manage <span>Channels</span></h2>
+    <div class="gen-row">
+      <div class="form-group">
+        <label class="form-label">Channel Name</label>
+        <input type="text" id="chanName" class="form-input" placeholder="e.g. XAUUSD Setups"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (optional)</label>
+        <input type="text" id="chanDesc" class="form-input" placeholder="What's this channel for?"/>
+      </div>
+      <button class="btn-primary" id="createChannelBtn">Create Channel</button>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table" id="channelsTable">
+        <thead><tr><th>Name</th><th>Slug</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="channelsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- COMMUNITY ROOM: LIVE SESSIONS -->
+  <section style="background:var(--black);">
+    <div class="section-tag">Community Room</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Live <span>Sessions</span></h2>
+    <div class="gen-row">
+      <div class="form-group">
+        <label class="form-label">Session Title</label>
+        <input type="text" id="sessTitle" class="form-input" placeholder="e.g. Weekly Trade Review"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Scheduled Start</label>
+        <input type="datetime-local" id="sessStart" class="form-input"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (optional)</label>
+        <input type="text" id="sessDesc" class="form-input" placeholder="What's this session about?"/>
+      </div>
+      <button class="btn-primary" id="createSessionBtn">Schedule</button>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table" id="sessionsTable">
+        <thead><tr><th>Title</th><th>Scheduled</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="sessionsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- VIDEO TUTORIALS -->
+  <section style="background:var(--black-mid);">
+    <div class="section-tag">Learning Content</div>
+    <h2 class="section-title" style="font-size:1.9rem;">Manage <span>Tutorial Videos</span></h2>
+    <div class="gen-row">
+      <div class="form-group">
+        <label class="form-label">Course</label>
+        <select id="vidCourse" class="form-select"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" id="vidTitle" class="form-input" placeholder="e.g. Reading Order Blocks"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">YouTube URL or ID</label>
+        <input type="text" id="vidYoutube" class="form-input" placeholder="https://youtu.be/… or bare ID"/>
+      </div>
+      <div class="form-group" style="max-width:110px;">
+        <label class="form-label">Order</label>
+        <input type="number" id="vidOrder" class="form-input" value="0" min="0"/>
+      </div>
+      <button class="btn-primary" id="addVideoBtn">Add Video</button>
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem;max-width:500px;">
+      <label class="form-label">Description (optional)</label>
+      <input type="text" id="vidDesc" class="form-input" placeholder="Short description shown under the title"/>
+    </div>
+    <div class="data-table-wrap">
+      <table class="data-table" id="videosTable">
+        <thead><tr><th>Course</th><th>Title</th><th>YouTube ID</th><th>Order</th><th>Actions</th></tr></thead>
+        <tbody id="videosBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- EDIT VIDEO MODAL -->
+<div class="modal-overlay" id="videoModalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeVideoModal()">✕</button>
+    <div class="modal-title">Edit Tutorial Video</div>
+    <div class="form-group">
+      <label class="form-label">Course</label>
+      <select id="editVidCourse" class="form-select"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input type="text" id="editVidTitle" class="form-input"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">YouTube URL or ID</label>
+      <input type="text" id="editVidYoutube" class="form-input"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input type="text" id="editVidDesc" class="form-input"/>
+    </div>
+    <div class="form-group" style="max-width:140px;">
+      <label class="form-label">Order</label>
+      <input type="number" id="editVidOrder" class="form-input" min="0"/>
+    </div>
+    <button class="btn-primary" style="width:100%;" id="saveVideoBtn">Save Changes</button>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">FA<span>FX</span></div>
+  <p class="footer-copy">© 2026 FAFX Trading Academy. Admin area — internal use only.</p>
+</footer>
+<div class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/main.js"></script>
+<script>
+let allAdmissions = [];
+let allCourses = [];
+let allVideos = [];
+let editingVideoId = null;
+let myAdminProfile = null;
+
+(async function init() {
+  const profile = await fafxRequireAdmin('login.html');
+  if (!profile) return;
+  myAdminProfile = profile;
+  document.getElementById('gateMsg').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  await loadAdmissions();
+  await loadUnusedCodes();
+  await loadChannels();
+  await loadSessions();
+  await loadCoursesForSelect();
+  await loadTutorialVideos();
+})();
+
+document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); fafxLogout(); });
+
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const count = parseInt(document.getElementById('genCount').value, 10) || 1;
+  const note = document.getElementById('genNote').value.trim() || null;
+  const setNumber = document.getElementById('genSetNumber').value.trim() || '01';
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+
+  const { data, error } = await fafxDB.rpc('generate_admission_codes', { p_count: count, p_note: note, p_set_number: setNumber });
+
+  btn.disabled = false; btn.textContent = 'Generate';
+
+  if (error) { showToast('⚠️ ' + error.message); return; }
+
+  const list = document.getElementById('codesList');
+  list.innerHTML = data.map(c => `<span class="code-chip">${c}</span>`).join('');
+  document.getElementById('codesOutput').style.display = 'block';
+  window._lastGeneratedCodes = data;
+  await loadUnusedCodes();
+});
+
+document.getElementById('copyAllBtn').addEventListener('click', () => {
+  const codes = (window._lastGeneratedCodes || []).join('\n');
+  navigator.clipboard.writeText(codes).then(() => showToast('✅ Codes copied to clipboard'));
+});
+
+async function loadAdmissions() {
+  const { data, error } = await fafxDB
+    .from('profiles')
+    .select('*')
+    .eq('role', 'student')
+    .order('created_at', { ascending: false });
+
+  if (error) { showToast('⚠️ Could not load admissions: ' + error.message); return; }
+  allAdmissions = data || [];
+
+  document.getElementById('admissionsBody').innerHTML = allAdmissions.map(s => `
+    <tr>
+      <td>${s.admission_number || '—'}</td>
+      <td>${escapeHtml(s.full_name)}</td>
+      <td>${escapeHtml(s.email)}</td>
+      <td>${escapeHtml(s.whatsapp || '—')}</td>
+      <td>${escapeHtml(s.country || '—')}</td>
+      <td>${escapeHtml(s.experience_level || '—')}</td>
+      <td>${escapeHtml(s.mentorship_tier || 'none')}</td>
+      <td>${new Date(s.created_at).toLocaleDateString()}</td>
+    </tr>
+  `).join('') || `<tr><td colspan="8" style="text-align:center;">No admissions yet.</td></tr>`;
+}
+
+async function loadUnusedCodes() {
+  const { data, error } = await fafxDB
+    .from('admission_codes')
+    .select('*')
+    .eq('used', false)
+    .order('created_at', { ascending: false });
+
+  if (error) return;
+  document.getElementById('unusedBody').innerHTML = (data || []).map(c => `
+    <tr><td>${c.code}</td><td>${escapeHtml(c.set_number || '01')}</td><td>${escapeHtml(c.note || '—')}</td><td>${new Date(c.created_at).toLocaleDateString()}</td></tr>
+  `).join('') || `<tr><td colspan="4" style="text-align:center;">No unused codes.</td></tr>`;
+}
+
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+  if (!allAdmissions.length) { showToast('Nothing to export yet.'); return; }
+  const headers = ['Admission #','Name','Email','WhatsApp','Country','Experience','Mentorship','Joined'];
+  const rows = allAdmissions.map(s => [
+    s.admission_number, s.full_name, s.email, s.whatsapp || '', s.country || '',
+    s.experience_level || '', s.mentorship_tier || 'none', new Date(s.created_at).toLocaleDateString()
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fafx-admissions-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+});
+
+// ── Community Room: Channels ──
+function slugify(str) {
+  return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+async function loadChannels() {
+  const { data, error } = await fafxDB
+    .from('chat_channels')
+    .select('*')
+    .eq('is_archived', false)
+    .order('sort_order', { ascending: true });
+
+  if (error) { showToast('⚠️ Could not load channels: ' + error.message); return; }
+
+  document.getElementById('channelsBody').innerHTML = (data || []).map(c => `
+    <tr>
+      <td>${escapeHtml(c.name)}</td>
+      <td><span style="font-family:var(--font-mono);font-size:0.75rem;">#${escapeHtml(c.slug)}</span></td>
+      <td>${escapeHtml(c.description || '—')}</td>
+      <td>${new Date(c.created_at).toLocaleDateString()}</td>
+      <td class="row-actions"><button class="btn-sm" data-archive-channel="${c.id}">Archive</button></td>
+    </tr>
+  `).join('') || `<tr><td colspan="5" style="text-align:center;">No channels yet.</td></tr>`;
+
+  document.querySelectorAll('[data-archive-channel]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Archive this channel? Students will no longer see it.')) return;
+      const { error } = await fafxDB.from('chat_channels').update({ is_archived: true }).eq('id', btn.dataset.archiveChannel);
+      if (error) { showToast('⚠️ ' + error.message); return; }
+      showToast('✅ Channel archived');
+      loadChannels();
+    });
+  });
+}
+
+document.getElementById('createChannelBtn').addEventListener('click', async () => {
+  const name = document.getElementById('chanName').value.trim();
+  const description = document.getElementById('chanDesc').value.trim() || null;
+  if (!name) { showToast('⚠️ Channel name is required'); return; }
+
+  const slug = slugify(name);
+  const btn = document.getElementById('createChannelBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  const { error } = await fafxDB.from('chat_channels').insert({
+    name, slug, description, created_by: myAdminProfile.id
+  });
+
+  btn.disabled = false; btn.textContent = 'Create Channel';
+
+  if (error) { showToast('⚠️ ' + (error.message.includes('duplicate') ? 'A channel with that name already exists' : error.message)); return; }
+
+  showToast('✅ Channel created');
+  document.getElementById('chanName').value = '';
+  document.getElementById('chanDesc').value = '';
+  loadChannels();
+});
+
+// ── Community Room: Live Sessions ──
+async function loadSessions() {
+  const { data, error } = await fafxDB
+    .from('live_sessions')
+    .select('*')
+    .order('scheduled_start', { ascending: false })
+    .limit(50);
+
+  if (error) { showToast('⚠️ Could not load sessions: ' + error.message); return; }
+
+  document.getElementById('sessionsBody').innerHTML = (data || []).map(s => `
+    <tr>
+      <td>${escapeHtml(s.title)}</td>
+      <td>${new Date(s.scheduled_start).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
+      <td><span class="status-badge status-${s.status}">${s.status}</span></td>
+      <td class="row-actions">
+        ${s.status === 'scheduled' ? `<button class="btn-sm" data-start-session="${s.id}">Go Live</button>` : ''}
+        ${s.status === 'live' ? `<button class="btn-sm" data-end-session="${s.id}">End</button>` : ''}
+        ${(s.status === 'scheduled' || s.status === 'live') ? `<button class="btn-sm" data-cancel-session="${s.id}">Cancel</button>` : ''}
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="4" style="text-align:center;">No sessions scheduled.</td></tr>`;
+
+  document.querySelectorAll('[data-start-session]').forEach(btn => {
+    btn.addEventListener('click', () => setSessionStatus(btn.dataset.startSession, 'live'));
+  });
+  document.querySelectorAll('[data-end-session]').forEach(btn => {
+    btn.addEventListener('click', () => setSessionStatus(btn.dataset.endSession, 'ended'));
+  });
+  document.querySelectorAll('[data-cancel-session]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('Cancel this session?')) setSessionStatus(btn.dataset.cancelSession, 'cancelled');
+    });
+  });
+}
+
+async function setSessionStatus(sessionId, status) {
+  const { error } = await fafxDB.rpc('set_live_session_status', { p_session_id: sessionId, p_status: status });
+  if (error) { showToast('⚠️ ' + error.message); return; }
+  showToast(status === 'live' ? '🔴 Session is now live — students will see the banner' : '✅ Session updated');
+  loadSessions();
+}
+
+document.getElementById('createSessionBtn').addEventListener('click', async () => {
+  const title = document.getElementById('sessTitle').value.trim();
+  const description = document.getElementById('sessDesc').value.trim() || null;
+  const startVal = document.getElementById('sessStart').value;
+
+  if (!title || !startVal) { showToast('⚠️ Title and scheduled start are required'); return; }
+
+  const jitsiRoomName = `fafx-${slugify(title)}-${Date.now().toString(36)}`;
+  const btn = document.getElementById('createSessionBtn');
+  btn.disabled = true; btn.textContent = 'Scheduling…';
+
+  const { error } = await fafxDB.from('live_sessions').insert({
+    title,
+    description,
+    jitsi_room_name: jitsiRoomName,
+    scheduled_start: new Date(startVal).toISOString(),
+    created_by: myAdminProfile.id
+  });
+
+  btn.disabled = false; btn.textContent = 'Schedule';
+
+  if (error) { showToast('⚠️ ' + error.message); return; }
+
+  showToast('✅ Session scheduled');
+  document.getElementById('sessTitle').value = '';
+  document.getElementById('sessDesc').value = '';
+  document.getElementById('sessStart').value = '';
+  loadSessions();
+});
+
+// ── Video Tutorials ──
+async function loadCoursesForSelect() {
+  const { data, error } = await fafxDB.from('courses').select('id, title').order('title');
+  if (error) { showToast('⚠️ Could not load courses: ' + error.message); return; }
+  allCourses = data || [];
+  const opts = allCourses.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+  document.getElementById('vidCourse').innerHTML = opts;
+  document.getElementById('editVidCourse').innerHTML = opts;
+}
+
+async function loadTutorialVideos() {
+  const { data, error } = await fafxDB
+    .from('tutorial_videos')
+    .select('id, title, description, youtube_id, sort_order, course_id, courses ( title )')
+    .order('sort_order', { ascending: true });
+
+  if (error) { showToast('⚠️ Could not load videos: ' + error.message); return; }
+  allVideos = data || [];
+
+  document.getElementById('videosBody').innerHTML = allVideos.map(v => `
+    <tr>
+      <td>${escapeHtml(v.courses?.title || '—')}</td>
+      <td>${escapeHtml(v.title)}</td>
+      <td><a href="https://youtu.be/${encodeURIComponent(v.youtube_id)}" target="_blank" style="color:var(--green-light);">${escapeHtml(v.youtube_id)}</a></td>
+      <td>${v.sort_order}</td>
+      <td class="row-actions">
+        <button class="btn-sm" data-edit-video="${v.id}">Edit</button>
+        <button class="btn-sm" data-delete-video="${v.id}">Delete</button>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="5" style="text-align:center;">No tutorial videos yet.</td></tr>`;
+
+  document.querySelectorAll('[data-edit-video]').forEach(btn => {
+    btn.addEventListener('click', () => openVideoModal(btn.dataset.editVideo));
+  });
+  document.querySelectorAll('[data-delete-video]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Delete this tutorial video?')) return;
+      const { error } = await fafxDB.from('tutorial_videos').delete().eq('id', btn.dataset.deleteVideo);
+      if (error) { showToast('⚠️ ' + error.message); return; }
+      showToast('✅ Video deleted');
+      loadTutorialVideos();
+    });
+  });
+}
+
+function extractYoutubeId(input) {
+  input = (input || '').trim();
+  const m = input.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+  return null;
+}
+
+document.getElementById('addVideoBtn').addEventListener('click', async () => {
+  const course_id = document.getElementById('vidCourse').value;
+  const title = document.getElementById('vidTitle').value.trim();
+  const youtube_id = extractYoutubeId(document.getElementById('vidYoutube').value);
+  const description = document.getElementById('vidDesc').value.trim() || null;
+  const sort_order = parseInt(document.getElementById('vidOrder').value, 10) || 0;
+
+  if (!course_id || !title || !youtube_id) { showToast('⚠️ Course, title, and a valid YouTube link/ID are required'); return; }
+
+  const btn = document.getElementById('addVideoBtn');
+  btn.disabled = true; btn.textContent = 'Adding…';
+
+  const { error } = await fafxDB.from('tutorial_videos').insert({
+    course_id, title, youtube_id, description, sort_order, created_by: myAdminProfile.id
+  });
+
+  btn.disabled = false; btn.textContent = 'Add Video';
+
+  if (error) { showToast('⚠️ ' + error.message); return; }
+
+  showToast('✅ Video added');
+  document.getElementById('vidTitle').value = '';
+  document.getElementById('vidYoutube').value = '';
+  document.getElementById('vidDesc').value = '';
+  document.getElementById('vidOrder').value = '0';
+  loadTutorialVideos();
+});
+
+function openVideoModal(id) {
+  const v = allVideos.find(x => x.id === id);
+  if (!v) return;
+  editingVideoId = id;
+  document.getElementById('editVidCourse').value = v.course_id;
+  document.getElementById('editVidTitle').value = v.title;
+  document.getElementById('editVidYoutube').value = v.youtube_id;
+  document.getElementById('editVidDesc').value = v.description || '';
+  document.getElementById('editVidOrder').value = v.sort_order || 0;
+  document.getElementById('videoModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeVideoModal() {
+  document.getElementById('videoModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  editingVideoId = null;
+}
+document.getElementById('videoModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeVideoModal();
+});
+
+document.getElementById('saveVideoBtn').addEventListener('click', async () => {
+  if (!editingVideoId) return;
+  const course_id = document.getElementById('editVidCourse').value;
+  const title = document.getElementById('editVidTitle').value.trim();
+  const youtube_id = extractYoutubeId(document.getElementById('editVidYoutube').value);
+  const description = document.getElementById('editVidDesc').value.trim() || null;
+  const sort_order = parseInt(document.getElementById('editVidOrder').value, 10) || 0;
+
+  if (!course_id || !title || !youtube_id) { showToast('⚠️ Course, title, and a valid YouTube link/ID are required'); return; }
+
+  const btn = document.getElementById('saveVideoBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const { error } = await fafxDB.from('tutorial_videos')
+    .update({ course_id, title, youtube_id, description, sort_order })
+    .eq('id', editingVideoId);
+
+  btn.disabled = false; btn.textContent = 'Save Changes';
+
+  if (error) { showToast('⚠️ ' + error.message); return; }
+
+  showToast('✅ Video updated');
+  closeVideoModal();
+  loadTutorialVideos();
+});
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
