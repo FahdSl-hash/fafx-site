@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#098751"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FAFX"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg"/>
+  <link rel="shortcut icon" href="../favicon/favicon.svg"/>
+<title>Community Room – FAFX Trading Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+/* ── Page shell: everything below nav+ticker fits in the remaining
+     viewport height exactly once. Only .message-list scrolls internally —
+     sidebar, chat-header and composer stay fixed in place. ── */
+.room-page { display: flex; flex-direction: column; height: calc(100vh - var(--nav-height) - var(--ticker-height)); }
+
+.room-shell { flex: 1; min-height: 0; display: grid; grid-template-columns: 240px 1fr; }
+.room-shell.has-live { grid-template-columns: 240px 1fr 380px; }
+
+.channel-sidebar { background: var(--black-mid); border-right: 1px solid var(--border); padding: 1.5rem 0; overflow-y: auto; min-height: 0; }
+.sidebar-title { font-family: var(--font-mono); font-size: 0.68rem; color: var(--white-dim); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 1.2rem; margin-bottom: 0.8rem; }
+.channel-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.2rem; color: var(--white-dim); font-size: 0.88rem; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; }
+.channel-item:hover { background: rgba(255,255,255,0.03); color: var(--white); }
+.channel-item.active { background: var(--green-dim); color: var(--white); border-left-color: var(--green); font-weight: 600; }
+.channel-item::before { content: '#'; color: var(--green); font-weight: 700; }
+.channel-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-light); margin-left: auto; animation: pulse 1.2s infinite; flex-shrink: 0; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.chat-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.chat-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap: 1rem; flex-wrap: wrap; flex-shrink: 0; }
+.chat-header h2 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+.chat-header p { font-size: 0.78rem; color: var(--white-dim); margin-top: 0.1rem; }
+.chat-header-live-badge { display: flex; align-items: center; gap: 0.6rem; }
+.live-pill { display: flex; align-items: center; gap: 0.4rem; background: var(--green); color: #fff; padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.live-pill .live-pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: pulse 1.2s infinite; }
+.join-live-btn { background: #fff; color: var(--green); border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: 700; font-size: 0.78rem; cursor: pointer; }
+
+.message-list { flex: 1; min-height: 0; overflow-y: auto; padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.msg { display: flex; gap: 0.75rem; scroll-margin-top: 1rem; border-radius: 6px; transition: background 0.6s ease; }
+.msg.msg-highlight { background: rgba(9,135,81,0.18); }
+.msg.is-reply { margin-left: 2.5rem; opacity: 0.96; }
+.msg-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+.msg-body-wrap { flex: 1; min-width: 0; }
+.msg-meta { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.15rem; }
+.msg-author { font-size: 0.85rem; font-weight: 600; color: var(--white); }
+.msg-time { font-size: 0.68rem; color: var(--white-dim); font-family: var(--font-mono); }
+.admin-badge { font-family: var(--font-mono); font-size: 0.6rem; background: var(--green); color: #fff; padding: 0.08rem 0.4rem; border-radius: 3px; font-weight: 700; letter-spacing: 0.05em; }
+.msg-text { font-size: 0.88rem; color: var(--white-dim); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.msg-quote { display: block; border-left: 3px solid var(--green); background: rgba(9,135,81,0.06); padding: 0.35rem 0.7rem; border-radius: 4px; margin-bottom: 0.4rem; font-size: 0.76rem; color: var(--white-dim); cursor: pointer; }
+.msg-quote strong { color: var(--green-light); }
+.msg-quote:hover { background: rgba(9,135,81,0.12); }
+.msg-attachment { margin-top: 0.5rem; }
+.msg-attachment a { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--black-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.76rem; color: var(--green-light); text-decoration: none; }
+.msg-image { max-width: 280px; max-height: 220px; border-radius: 8px; border: 1px solid var(--border); cursor: zoom-in; display: block; transition: border-color 0.15s; }
+.msg-image:hover { border-color: var(--green); }
+.msg-actions { display: flex; gap: 1rem; margin-top: 0.4rem; }
+.msg-action-btn { background: none; border: none; color: var(--white-dim); font-size: 0.74rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; transition: color 0.15s; }
+.msg-action-btn:hover { color: var(--green-light); }
+.msg-action-btn.liked { color: var(--green-light); }
+
+.jump-to-latest { position: absolute; bottom: 90px; right: 2rem; background: var(--green); color: #fff; border: none; border-radius: 20px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: none; box-shadow: 0 4px 14px rgba(0,0,0,0.4); z-index: 20; }
+.jump-to-latest.show { display: block; }
+
+.composer { border-top: 1px solid var(--border); padding: 1rem 1.5rem; background: var(--black-mid); flex-shrink: 0; }
+.reply-context { display: flex; align-items: center; justify-content: space-between; background: rgba(9,135,81,0.08); border-left: 3px solid var(--green); padding: 0.5rem 0.8rem; border-radius: 4px; font-size: 0.76rem; color: var(--white-dim); margin-bottom: 0.6rem; }
+.reply-context.hidden { display: none; }
+.reply-context button { background: none; border: none; color: var(--white-dim); cursor: pointer; font-size: 1rem; }
+.composer-row { display: flex; gap: 0.6rem; align-items: flex-end; }
+.composer-textarea { flex: 1; background: var(--black-card); border: 1px solid var(--border); border-radius: 6px; color: var(--white); padding: 0.7rem 0.9rem; font-family: var(--font-body); font-size: 0.88rem; resize: none; min-height: 42px; max-height: 140px; outline: none; }
+.composer-textarea:focus { border-color: var(--green); }
+.composer-file-btn { background: var(--black-card); border: 1px solid var(--border); border-radius: 6px; width: 42px; height: 42px; display:flex; align-items:center; justify-content:center; cursor: pointer; color: var(--white-dim); flex-shrink: 0; }
+.composer-file-btn:hover { border-color: var(--green); color: var(--green-light); }
+.file-preview { font-size: 0.74rem; color: var(--green-light); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
+.file-preview.hidden { display: none; }
+.file-preview button { background:none;border:none;color:var(--white-dim);cursor:pointer; }
+
+.state-msg { text-align: center; color: var(--white-dim); font-size: 0.85rem; padding: 2rem; }
+
+/* ── Live video panel: an inline 3rd column on desktop so chat stays
+     usable during a live session. On narrow screens it becomes a
+     bottom sheet, since there's no room for 3 columns — chat above
+     it stays reachable. ── */
+.live-panel { display: none; flex-direction: column; border-left: 1px solid var(--border); background: #000; min-height: 0; }
+.live-panel.open { display: flex; }
+.live-panel-header { padding: 0.6rem 1rem; background: var(--black-mid); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; flex-shrink: 0; }
+.live-panel-title { display: flex; align-items: center; gap: 0.5rem; color: var(--white); font-weight: 600; }
+.live-participant-count { font-family: var(--font-mono); font-size: 0.7rem; color: var(--green-light); }
+.live-panel-close { background: none; border: none; color: var(--white-dim); cursor: pointer; font-size: 1rem; }
+.live-video-container { flex: 1; min-height: 0; }
+
+.lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; display: none; align-items: center; justify-content: center; padding: 2rem; }
+.lightbox-overlay.open { display: flex; }
+.lightbox-overlay img { max-width: 100%; max-height: 100%; border-radius: 6px; }
+.lightbox-close { position: absolute; top: 1.2rem; right: 1.5rem; background: var(--green); color: #fff; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-weight: 700; cursor: pointer; }
+
+@media(max-width:1100px) {
+  .room-shell.has-live { grid-template-columns: 240px 1fr; }
+  .live-panel.open { position: fixed; left: 0; right: 0; bottom: 0; height: 52vh; z-index: 150; box-shadow: 0 -8px 30px rgba(0,0,0,0.6); }
+}
+@media(max-width:900px) {
+  .room-shell, .room-shell.has-live { grid-template-columns: 1fr; }
+  .channel-sidebar { display: flex; overflow-x: auto; overflow-y: hidden; padding: 0.8rem; border-right: none; border-bottom: 1px solid var(--border); }
+  .channel-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .channel-item.active { border-left: none; border-bottom-color: var(--green); }
+  .sidebar-title { display: none; }
+  .msg.is-reply { margin-left: 1rem; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">FA<span>FX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="courses.html">Courses</a></li>
+    <li><a href="ea-products.html">EA Products</a></li>
+    <li><a href="community.html" class="active">Community</a></li>
+    <li><a href="#" id="logoutLink" class="nav-cta">Log Out</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="ticker-bar">
+  <iframe
+    scrolling="no"
+    allowtransparency="true"
+    frameborder="0"
+    src="https://s.tradingview.com/embed-widget/ticker-tape/?locale=en#%7B%22symbols%22%3A%5B%7B%22proName%22%3A%22OANDA%3AXAUUSD%22%2C%22title%22%3A%22Gold%22%7D%2C%7B%22proName%22%3A%22FX%3AEURUSD%22%2C%22title%22%3A%22EUR%2FUSD%22%7D%2C%7B%22proName%22%3A%22FX%3AGBPUSD%22%2C%22title%22%3A%22GBP%2FUSD%22%7D%2C%7B%22proName%22%3A%22FX%3AUSDJPY%22%2C%22title%22%3A%22USD%2FJPY%22%7D%2C%7B%22proName%22%3A%22FX%3AAUDUSD%22%2C%22title%22%3A%22AUD%2FUSD%22%7D%2C%7B%22proName%22%3A%22BINANCE%3ABTCUSDT%22%2C%22title%22%3A%22BTC%2FUSDT%22%7D%2C%7B%22proName%22%3A%22BINANCE%3AETHUSDT%22%2C%22title%22%3A%22ETH%2FUSDT%22%7D%5D%2C%22showSymbolLogo%22%3Afalse%2C%22isTransparent%22%3Atrue%2C%22displayMode%22%3A%22adaptive%22%2C%22colorTheme%22%3A%22dark%22%2C%22locale%22%3A%22en%22%7D"
+    style="display:block; height:100%; width:100%; margin:0; padding:0; border:none; vertical-align:top;"
+  ></iframe>
+</div>
+
+<div class="room-page">
+  <div class="room-shell" id="roomShell">
+    <aside class="channel-sidebar">
+      <div class="sidebar-title">Channels</div>
+      <div id="channelList"><div class="state-msg">Loading…</div></div>
+    </aside>
+
+    <main class="chat-main">
+      <div class="chat-header">
+        <div>
+          <h2 id="channelName">#general</h2>
+          <p id="channelDesc">Main FAFX community discussion</p>
+        </div>
+        <div class="chat-header-live-badge" id="liveBadgeWrap" style="display:none;">
+          <span class="live-pill"><span class="live-pulse-dot"></span><span id="liveBadgeTitle">Live</span></span>
+          <button class="join-live-btn" id="joinLiveBtn">Join Live</button>
+        </div>
+      </div>
+
+      <div style="position:relative; flex:1; min-height:0; display:flex; flex-direction:column;">
+        <div class="message-list" id="messageList">
+          <div class="state-msg">Loading messages…</div>
+        </div>
+        <button class="jump-to-latest" id="jumpToLatestBtn">↓ New messages</button>
+      </div>
+
+      <div class="composer">
+        <div class="reply-context hidden" id="replyContext">
+          <span>Replying to <strong id="replyToName"></strong></span>
+          <button id="cancelReplyBtn">✕</button>
+        </div>
+        <div class="composer-row">
+          <button class="composer-file-btn" id="fileBtn" title="Attach file">📎</button>
+          <input type="file" id="fileInput" style="display:none;" accept="image/*,.pdf,.doc,.docx"/>
+          <textarea id="composerInput" class="composer-textarea" placeholder="Message #general…" rows="1"></textarea>
+          <button class="btn-primary" id="sendBtn" style="padding:0.7rem 1.3rem;">Send</button>
+        </div>
+        <div class="file-preview hidden" id="filePreview">
+          <span id="filePreviewName"></span>
+          <button id="removeFileBtn">✕</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="live-panel" id="livePanel">
+      <div class="live-panel-header">
+        <div class="live-panel-title"><span class="live-pulse-dot" style="width:7px;height:7px;border-radius:50%;background:var(--green-light);animation:pulse 1.2s infinite;"></span><span id="livePanelTitle">Live session</span></div>
+        <div style="display:flex;align-items:center;gap:0.8rem;">
+          <span class="live-participant-count" id="liveParticipantCount">— in session</span>
+          <button class="live-panel-close" id="closeLivePanelBtn">✕</button>
+        </div>
+      </div>
+      <div class="live-video-container" id="liveVideoContainer"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- Image lightbox -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxCloseBtn">Close ✕</button>
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<div class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(async function () {
+  // ── Auth guard (same convention as dashboard/admin) ──
+  const session = await fafxRequireLogin('../login.html');
+  if (!session) return;
+
+  const myProfile = await fafxGetProfile();
+  const currentUser = session.user;
+  const myName = myProfile?.full_name || 'Trader';
+
+  document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); fafxLogout(); });
+
+  // ── State ──
+  let channels = [];
+  let activeChannel = null;
+  let activeLiveSession = null; // live session for the currently open channel, if any
+  let replyTarget = null;
+  let pendingFile = null;
+  let messageSub = null;
+  let liveSub = null;
+  let jitsiApi = null;
+  let autoScrollEnabled = true;
+
+  const channelListEl = document.getElementById('channelList');
+  const messageListEl = document.getElementById('messageList');
+  const channelNameEl = document.getElementById('channelName');
+  const channelDescEl = document.getElementById('channelDesc');
+  const composerInput = document.getElementById('composerInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const fileBtn = document.getElementById('fileBtn');
+  const fileInput = document.getElementById('fileInput');
+  const filePreview = document.getElementById('filePreview');
+  const filePreviewName = document.getElementById('filePreviewName');
+  const removeFileBtn = document.getElementById('removeFileBtn');
+  const replyContext = document.getElementById('replyContext');
+  const replyToName = document.getElementById('replyToName');
+  const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+  const jumpToLatestBtn = document.getElementById('jumpToLatestBtn');
+  const liveBadgeWrap = document.getElementById('liveBadgeWrap');
+  const liveBadgeTitle = document.getElementById('liveBadgeTitle');
+  const joinLiveBtn = document.getElementById('joinLiveBtn');
+  const roomShell = document.getElementById('roomShell');
+  const livePanel = document.getElementById('livePanel');
+  const livePanelTitle = document.getElementById('livePanelTitle');
+  const liveParticipantCount = document.getElementById('liveParticipantCount');
+  const closeLivePanelBtn = document.getElementById('closeLivePanelBtn');
+  const lightboxOverlay = document.getElementById('lightboxOverlay');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCloseBtn = document.getElementById('lightboxCloseBtn');
+
+  // ═══════════════════════ CHANNELS ═══════════════════════
+  async function loadChannels() {
+    const { data, error } = await fafxDB
+      .from('chat_channels')
+      .select('id, slug, name, description')
+      .eq('is_archived', false)
+      .order('sort_order', { ascending: true });
+
+    if (error) { console.error(error); channelListEl.innerHTML = '<div class="state-msg">Failed to load channels</div>'; return; }
+
+    channels = data || [];
+    await refreshChannelsLiveStatus();
+    renderChannelList();
+    if (channels.length) selectChannel(channels[0]);
+  }
+
+  // Which channels currently have a live session — drives the little pulse
+  // dot in the sidebar so students can see at a glance where things are live.
+  async function refreshChannelsLiveStatus() {
+    const { data } = await fafxDB.from('live_sessions').select('channel_id').eq('status', 'live');
+    const liveIds = new Set((data || []).map(r => r.channel_id));
+    channels.forEach(c => { c._isLive = liveIds.has(c.id); });
+  }
+
+  function renderChannelList() {
+    channelListEl.innerHTML = channels.map(c => `
+      <div class="channel-item ${activeChannel?.id === c.id ? 'active' : ''}" data-id="${c.id}">
+        <span>${escapeHtml(c.name)}</span>
+        ${c._isLive ? '<span class="channel-live-dot" title="Live now"></span>' : ''}
+      </div>
+    `).join('');
+    channelListEl.querySelectorAll('.channel-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const ch = channels.find(c => c.id === el.dataset.id);
+        if (ch) selectChannel(ch);
+      });
+    });
+  }
+
+  function selectChannel(channel) {
+    activeChannel = channel;
+    channelNameEl.textContent = '#' + channel.name;
+    channelDescEl.textContent = channel.description || '';
+    composerInput.placeholder = `Message #${channel.name}…`;
+    renderChannelList();
+    cancelReply();
+    autoScrollEnabled = true; // always land on the latest message when switching channels
+    loadMessages();
+    subscribeToChannel();
+    checkLiveSessionForActiveChannel();
+    subscribeToLiveForActiveChannel();
+  }
+
+  // ═══════════════════════ MESSAGES ═══════════════════════
+  async function loadMessages() {
+    messageListEl.innerHTML = '<div class="state-msg">Loading messages…</div>';
+
+    const { data, error } = await fafxDB
+      .from('chat_messages')
+      .select(`
+        id, body, created_at, parent_message_id, author_id, is_deleted,
+        profiles:author_id ( full_name, role ),
+        chat_attachments ( id, file_url, file_name, file_type ),
+        chat_likes ( id, student_id ),
+        parent:parent_message_id ( id, body, profiles:author_id ( full_name ) )
+      `)
+      .eq('channel_id', activeChannel.id)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: true })
+      .limit(200);
+
+    if (error) { console.error(error); messageListEl.innerHTML = '<div class="state-msg">Failed to load messages</div>'; return; }
+
+    renderMessages(data || []);
+  }
+
+  function isScrolledNearBottom() {
+    return messageListEl.scrollHeight - messageListEl.scrollTop - messageListEl.clientHeight < 120;
+  }
+
+  messageListEl.addEventListener('scroll', () => {
+    autoScrollEnabled = isScrolledNearBottom();
+    if (autoScrollEnabled) jumpToLatestBtn.classList.remove('show');
+  });
+
+  jumpToLatestBtn.addEventListener('click', () => {
+    autoScrollEnabled = true;
+    messageListEl.scrollTop = messageListEl.scrollHeight;
+    jumpToLatestBtn.classList.remove('show');
+  });
+
+  function renderMessages(messages) {
+    if (!messages.length) {
+      messageListEl.innerHTML = '<div class="state-msg">No messages yet — start the conversation.</div>';
+      return;
+    }
+    messageListEl.innerHTML = messages.map(m => messageTemplate(m)).join('');
+
+    if (autoScrollEnabled) {
+      messageListEl.scrollTop = messageListEl.scrollHeight;
+      jumpToLatestBtn.classList.remove('show');
+    } else {
+      jumpToLatestBtn.classList.add('show');
+    }
+
+    messageListEl.querySelectorAll('[data-like-id]').forEach(btn => {
+      btn.addEventListener('click', () => toggleLike(btn.dataset.likeId, btn));
+    });
+    messageListEl.querySelectorAll('[data-reply-id]').forEach(btn => {
+      btn.addEventListener('click', () => startReply(btn.dataset.replyId, btn.dataset.replyName));
+    });
+    messageListEl.querySelectorAll('[data-quote-jump]').forEach(el => {
+      el.addEventListener('click', () => jumpToMessage(el.dataset.quoteJump));
+    });
+    messageListEl.querySelectorAll('.msg-image').forEach(img => {
+      img.addEventListener('click', () => openLightbox(img.dataset.full, img.alt));
+    });
+  }
+
+  function jumpToMessage(id) {
+    const el = document.getElementById('msg-' + id);
+    if (!el) { showToast('That message is further back in history.'); return; }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('msg-highlight');
+    setTimeout(() => el.classList.remove('msg-highlight'), 1200);
+  }
+
+  function messageTemplate(m) {
+    const authorName = m.profiles?.full_name || 'Trader';
+    const isAdminAuthor = m.profiles?.role === 'admin';
+    const initial = authorName.charAt(0).toUpperCase();
+    const time = new Date(m.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    const likedByMe = (m.chat_likes || []).some(l => l.student_id === currentUser.id);
+    const likeCount = (m.chat_likes || []).length;
+    const isReply = !!m.parent_message_id;
+
+    let quoteHtml = '';
+    if (isReply && m.parent) {
+      const parentAuthor = m.parent.profiles?.full_name || 'Trader';
+      const snippet = (m.parent.body || '').slice(0, 90);
+      quoteHtml = `<div class="msg-quote" data-quote-jump="${m.parent.id}"><strong>${escapeHtml(parentAuthor)}</strong> — ${escapeHtml(snippet)}${(m.parent.body||'').length > 90 ? '…' : ''}</div>`;
+    } else if (isReply && !m.parent) {
+      quoteHtml = `<div class="msg-quote" style="cursor:default;opacity:0.6;">Original message unavailable</div>`;
+    }
+
+    const attachments = (m.chat_attachments || []).map(a => {
+      const isImage = a.file_type && a.file_type.startsWith('image/');
+      if (isImage) {
+        return `<div class="msg-attachment"><img class="msg-image" src="${escapeAttr(a.file_url)}" data-full="${escapeAttr(a.file_url)}" alt="${escapeAttr(a.file_name)}"/></div>`;
+      }
+      return `<div class="msg-attachment"><a href="${escapeAttr(a.file_url)}" target="_blank" rel="noopener">📎 ${escapeHtml(a.file_name)}</a></div>`;
+    }).join('');
+
+    return `
+      <div class="msg ${isReply ? 'is-reply' : ''}" id="msg-${m.id}">
+        <div class="msg-avatar" ${isAdminAuthor ? 'style="background:var(--green);border-color:var(--green-light);"' : ''}>${escapeHtml(initial)}</div>
+        <div class="msg-body-wrap">
+          <div class="msg-meta">
+            <span class="msg-author">${escapeHtml(authorName)}</span>
+            ${isAdminAuthor ? '<span class="admin-badge">ADMIN</span>' : ''}
+            <span class="msg-time">${time}</span>
+          </div>
+          ${quoteHtml}
+          <div class="msg-text">${escapeHtml(m.body)}</div>
+          ${attachments}
+          <div class="msg-actions">
+            <button class="msg-action-btn ${likedByMe ? 'liked' : ''}" data-like-id="${m.id}">👍 <span>${likeCount || ''}</span></button>
+            <button class="msg-action-btn" data-reply-id="${m.id}" data-reply-name="${escapeAttr(authorName)}">↩ Reply</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function toggleLike(messageId, btn) {
+    const isLiked = btn.classList.contains('liked');
+    if (isLiked) {
+      await fafxDB.from('chat_likes').delete().eq('message_id', messageId).eq('student_id', currentUser.id);
+    } else {
+      await fafxDB.from('chat_likes').insert({ message_id: messageId, student_id: currentUser.id });
+    }
+    loadMessages();
+  }
+
+  function startReply(messageId, authorName) {
+    replyTarget = { id: messageId, authorName };
+    replyToName.textContent = authorName;
+    replyContext.classList.remove('hidden');
+    composerInput.focus();
+  }
+  function cancelReply() {
+    replyTarget = null;
+    replyContext.classList.add('hidden');
+  }
+  cancelReplyBtn.addEventListener('click', cancelReply);
+
+  fileBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) {
+      pendingFile = fileInput.files[0];
+      filePreviewName.textContent = pendingFile.name;
+      filePreview.classList.remove('hidden');
+    }
+  });
+  removeFileBtn.addEventListener('click', () => {
+    pendingFile = null;
+    fileInput.value = '';
+    filePreview.classList.add('hidden');
+  });
+
+  async function sendMessage() {
+    const body = composerInput.value.trim();
+    if (!body && !pendingFile) return;
+
+    sendBtn.disabled = true;
+    try {
+      const { data: inserted, error } = await fafxDB
+        .from('chat_messages')
+        .insert({
+          channel_id: activeChannel.id,
+          author_id: currentUser.id,
+          parent_message_id: replyTarget?.id || null,
+          body: body || '(attachment)'
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      if (pendingFile) {
+        const path = `${currentUser.id}/${Date.now()}_${pendingFile.name}`;
+        const { error: uploadError } = await fafxDB.storage.from('chat-uploads').upload(path, pendingFile);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = fafxDB.storage.from('chat-uploads').getPublicUrl(path);
+
+        await fafxDB.from('chat_attachments').insert({
+          message_id: inserted.id,
+          file_url: urlData.publicUrl,
+          file_name: pendingFile.name,
+          file_type: pendingFile.type,
+          file_size_kb: Math.round(pendingFile.size / 1024),
+          uploaded_by: currentUser.id
+        });
+      }
+
+      composerInput.value = '';
+      pendingFile = null;
+      fileInput.value = '';
+      filePreview.classList.add('hidden');
+      cancelReply();
+      autoScrollEnabled = true; // sending a message always snaps you to the bottom
+      loadMessages();
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Message failed to send. Please try again.');
+    }
+    sendBtn.disabled = false;
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  composerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  function subscribeToChannel() {
+    if (messageSub) fafxDB.removeChannel(messageSub);
+    messageSub = fafxDB
+      .channel(`chat-room-${activeChannel.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages', filter: `channel_id=eq.${activeChannel.id}` }, () => loadMessages())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_likes' }, () => loadMessages())
+      .subscribe();
+  }
+
+  // ═══════════════════════ LIVE SESSIONS (per-channel) ═══════════════════════
+  async function checkLiveSessionForActiveChannel() {
+    const { data } = await fafxDB
+      .from('live_sessions')
+      .select('id, title, jitsi_room_name, status, channel_id')
+      .eq('channel_id', activeChannel.id)
+      .eq('status', 'live')
+      .maybeSingle();
+
+    activeLiveSession = data || null;
+
+    if (activeLiveSession) {
+      liveBadgeTitle.textContent = activeLiveSession.title;
+      liveBadgeWrap.style.display = 'flex';
+      joinLiveBtn.onclick = () => openLivePanel(activeLiveSession);
+    } else {
+      liveBadgeWrap.style.display = 'none';
+      // If the panel is open for a session that just ended, close it.
+      if (livePanel.classList.contains('open')) closeLivePanel();
+    }
+  }
+
+  function subscribeToLiveForActiveChannel() {
+    if (liveSub) fafxDB.removeChannel(liveSub);
+    liveSub = fafxDB
+      .channel(`live-status-${activeChannel.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_sessions', filter: `channel_id=eq.${activeChannel.id}` }, () => {
+        checkLiveSessionForActiveChannel();
+      })
+      .subscribe();
+  }
+
+  function openLivePanel(sessionData) {
+    livePanelTitle.textContent = sessionData.title;
+    liveParticipantCount.textContent = '— in session';
+    roomShell.classList.add('has-live');
+    livePanel.classList.add('open');
+
+    const container = document.getElementById('liveVideoContainer');
+    container.innerHTML = '';
+
+    const domain = 'meet.jit.si';
+    const options = {
+      roomName: sessionData.jitsi_room_name,
+      width: '100%',
+      height: '100%',
+      parentNode: container,
+      userInfo: { displayName: myName }
+    };
+
+    function launch() {
+      jitsiApi = new JitsiMeetExternalAPI(domain, options);
+      jitsiApi.on('videoConferenceJoined', updateParticipantCount);
+      jitsiApi.on('participantJoined', updateParticipantCount);
+      jitsiApi.on('participantLeft', updateParticipantCount);
+    }
+
+    if (!window.JitsiMeetExternalAPI) {
+      const s = document.createElement('script');
+      s.src = 'https://meet.jit.si/external_api.js';
+      s.onload = launch;
+      document.body.appendChild(s);
+    } else {
+      launch();
+    }
+  }
+
+  function updateParticipantCount() {
+    if (!jitsiApi) return;
+    jitsiApi.getParticipantsInfo().then(list => {
+      liveParticipantCount.textContent = `${(list?.length || 0) + 1} in session`;
+    }).catch(() => {});
+  }
+
+  function closeLivePanel() {
+    roomShell.classList.remove('has-live');
+    livePanel.classList.remove('open');
+    if (jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
+    document.getElementById('liveVideoContainer').innerHTML = '';
+  }
+  closeLivePanelBtn.addEventListener('click', closeLivePanel);
+
+  // ═══════════════════════ IMAGE LIGHTBOX ═══════════════════════
+  function openLightbox(url, alt) {
+    lightboxImg.src = url;
+    lightboxImg.alt = alt || '';
+    lightboxOverlay.classList.add('open');
+  }
+  function closeLightbox() {
+    lightboxOverlay.classList.remove('open');
+    lightboxImg.src = '';
+  }
+  lightboxCloseBtn.addEventListener('click', closeLightbox);
+  lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) closeLightbox(); });
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+  function escapeAttr(str) { return escapeHtml(str); }
+
+  await loadChannels();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[FAFX] SW registered:', reg.scope))
+      .catch(err => console.log('[FAFX] SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
