@@ -323,4 +323,324 @@
       `)
       .eq('channel_id', activeChannel.id)
       .eq('is_deleted', false)
-      .order('created_at'
+      .order('created_at', { ascending: true })
+      .limit(200);
+
+    if (error) { console.error(error); messageListEl.innerHTML = '<div class="state-msg">Failed to load messages</div>'; return; }
+
+    renderMessages(data || []);
+  }
+
+  function isScrolledNearBottom() {
+    return messageListEl.scrollHeight - messageListEl.scrollTop - messageListEl.clientHeight < 120;
+  }
+
+  messageListEl.addEventListener('scroll', () => {
+    autoScrollEnabled = isScrolledNearBottom();
+    if (autoScrollEnabled) jumpToLatestBtn.classList.remove('show');
+  });
+
+  jumpToLatestBtn.addEventListener('click', () => {
+    autoScrollEnabled = true;
+    messageListEl.scrollTop = messageListEl.scrollHeight;
+    jumpToLatestBtn.classList.remove('show');
+  });
+
+  function renderMessages(messages) {
+    if (!messages.length) {
+      messageListEl.innerHTML = '<div class="state-msg">No messages yet — start the conversation.</div>';
+      return;
+    }
+    messageListEl.innerHTML = messages.map(m => messageTemplate(m)).join('');
+
+    if (autoScrollEnabled) {
+      messageListEl.scrollTop = messageListEl.scrollHeight;
+      jumpToLatestBtn.classList.remove('show');
+    } else {
+      jumpToLatestBtn.classList.add('show');
+    }
+
+    messageListEl.querySelectorAll('[data-like-id]').forEach(btn => {
+      btn.addEventListener('click', () => toggleLike(btn.dataset.likeId, btn));
+    });
+    messageListEl.querySelectorAll('[data-reply-id]').forEach(btn => {
+      btn.addEventListener('click', () => startReply(btn.dataset.replyId, btn.dataset.replyName));
+    });
+    messageListEl.querySelectorAll('[data-quote-jump]').forEach(el => {
+      el.addEventListener('click', () => jumpToMessage(el.dataset.quoteJump));
+    });
+    messageListEl.querySelectorAll('.msg-image').forEach(img => {
+      img.addEventListener('click', () => openLightbox(img.dataset.full, img.alt));
+    });
+  }
+
+  function jumpToMessage(id) {
+    const el = document.getElementById('msg-' + id);
+    if (!el) { showToast('That message is further back in history.'); return; }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('msg-highlight');
+    setTimeout(() => el.classList.remove('msg-highlight'), 1200);
+  }
+
+  function messageTemplate(m) {
+    const authorName = m.profiles?.full_name || 'Trader';
+    const isAdminAuthor = m.profiles?.role === 'admin';
+    const initial = authorName.charAt(0).toUpperCase();
+    const time = new Date(m.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    const likedByMe = (m.chat_likes || []).some(l => l.student_id === currentUser.id);
+    const likeCount = (m.chat_likes || []).length;
+    const isReply = !!m.parent_message_id;
+
+    let quoteHtml = '';
+    if (isReply && m.parent) {
+      const parentAuthor = m.parent.profiles?.full_name || 'Trader';
+      const snippet = (m.parent.body || '').slice(0, 90);
+      quoteHtml = `<div class="msg-quote" data-quote-jump="${m.parent.id}"><strong>${escapeHtml(parentAuthor)}</strong> — ${escapeHtml(snippet)}${(m.parent.body||'').length > 90 ? '…' : ''}</div>`;
+    } else if (isReply && !m.parent) {
+      quoteHtml = `<div class="msg-quote" style="cursor:default;opacity:0.6;">Original message unavailable</div>`;
+    }
+
+    const attachments = (m.chat_attachments || []).map(a => {
+      const isImage = a.file_type && a.file_type.startsWith('image/');
+      if (isImage) {
+        return `<div class="msg-attachment"><img class="msg-image" src="${escapeAttr(a.file_url)}" data-full="${escapeAttr(a.file_url)}" alt="${escapeAttr(a.file_name)}"/></div>`;
+      }
+      return `<div class="msg-attachment"><a href="${escapeAttr(a.file_url)}" target="_blank" rel="noopener">📎 ${escapeHtml(a.file_name)}</a></div>`;
+    }).join('');
+
+    return `
+      <div class="msg ${isReply ? 'is-reply' : ''}" id="msg-${m.id}">
+        <div class="msg-avatar" ${isAdminAuthor ? 'style="background:var(--green);border-color:var(--green-light);"' : ''}>${escapeHtml(initial)}</div>
+        <div class="msg-body-wrap">
+          <div class="msg-meta">
+            <span class="msg-author">${escapeHtml(authorName)}</span>
+            ${isAdminAuthor ? '<span class="admin-badge">ADMIN</span>' : ''}
+            <span class="msg-time">${time}</span>
+          </div>
+          ${quoteHtml}
+          <div class="msg-text">${escapeHtml(m.body)}</div>
+          ${attachments}
+          <div class="msg-actions">
+            <button class="msg-action-btn ${likedByMe ? 'liked' : ''}" data-like-id="${m.id}">👍 <span>${likeCount || ''}</span></button>
+            <button class="msg-action-btn" data-reply-id="${m.id}" data-reply-name="${escapeAttr(authorName)}">↩ Reply</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function toggleLike(messageId, btn) {
+    const isLiked = btn.classList.contains('liked');
+    if (isLiked) {
+      await fafxDB.from('chat_likes').delete().eq('message_id', messageId).eq('student_id', currentUser.id);
+    } else {
+      await fafxDB.from('chat_likes').insert({ message_id: messageId, student_id: currentUser.id });
+    }
+    loadMessages();
+  }
+
+  function startReply(messageId, authorName) {
+    replyTarget = { id: messageId, authorName };
+    replyToName.textContent = authorName;
+    replyContext.classList.remove('hidden');
+    composerInput.focus();
+  }
+  function cancelReply() {
+    replyTarget = null;
+    replyContext.classList.add('hidden');
+  }
+  cancelReplyBtn.addEventListener('click', cancelReply);
+
+  fileBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) {
+      pendingFile = fileInput.files[0];
+      filePreviewName.textContent = pendingFile.name;
+      filePreview.classList.remove('hidden');
+    }
+  });
+  removeFileBtn.addEventListener('click', () => {
+    pendingFile = null;
+    fileInput.value = '';
+    filePreview.classList.add('hidden');
+  });
+
+  async function sendMessage() {
+    const body = composerInput.value.trim();
+    if (!body && !pendingFile) return;
+
+    sendBtn.disabled = true;
+    try {
+      const { data: inserted, error } = await fafxDB
+        .from('chat_messages')
+        .insert({
+          channel_id: activeChannel.id,
+          author_id: currentUser.id,
+          parent_message_id: replyTarget?.id || null,
+          body: body || '(attachment)'
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      if (pendingFile) {
+        const path = `${currentUser.id}/${Date.now()}_${pendingFile.name}`;
+        const { error: uploadError } = await fafxDB.storage.from('chat-uploads').upload(path, pendingFile);
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = fafxDB.storage.from('chat-uploads').getPublicUrl(path);
+
+        await fafxDB.from('chat_attachments').insert({
+          message_id: inserted.id,
+          file_url: urlData.publicUrl,
+          file_name: pendingFile.name,
+          file_type: pendingFile.type,
+          file_size_kb: Math.round(pendingFile.size / 1024),
+          uploaded_by: currentUser.id
+        });
+      }
+
+      composerInput.value = '';
+      pendingFile = null;
+      fileInput.value = '';
+      filePreview.classList.add('hidden');
+      cancelReply();
+      autoScrollEnabled = true; // sending a message always snaps you to the bottom
+      loadMessages();
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Message failed to send. Please try again.');
+    }
+    sendBtn.disabled = false;
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  composerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  function subscribeToChannel() {
+    if (messageSub) fafxDB.removeChannel(messageSub);
+    messageSub = fafxDB
+      .channel(`chat-room-${activeChannel.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages', filter: `channel_id=eq.${activeChannel.id}` }, () => loadMessages())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_likes' }, () => loadMessages())
+      .subscribe();
+  }
+
+  // ═══════════════════════ LIVE SESSIONS (per-channel) ═══════════════════════
+  async function checkLiveSessionForActiveChannel() {
+    const { data } = await fafxDB
+      .from('live_sessions')
+      .select('id, title, jitsi_room_name, status, channel_id')
+      .eq('channel_id', activeChannel.id)
+      .eq('status', 'live')
+      .maybeSingle();
+
+    activeLiveSession = data || null;
+
+    if (activeLiveSession) {
+      liveBadgeTitle.textContent = activeLiveSession.title;
+      liveBadgeWrap.style.display = 'flex';
+      joinLiveBtn.onclick = () => openLivePanel(activeLiveSession);
+    } else {
+      liveBadgeWrap.style.display = 'none';
+      // If the panel is open for a session that just ended, close it.
+      if (livePanel.classList.contains('open')) closeLivePanel();
+    }
+  }
+
+  function subscribeToLiveForActiveChannel() {
+    if (liveSub) fafxDB.removeChannel(liveSub);
+    liveSub = fafxDB
+      .channel(`live-status-${activeChannel.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_sessions', filter: `channel_id=eq.${activeChannel.id}` }, () => {
+        checkLiveSessionForActiveChannel();
+      })
+      .subscribe();
+  }
+
+  function openLivePanel(sessionData) {
+    livePanelTitle.textContent = sessionData.title;
+    liveParticipantCount.textContent = '— in session';
+    roomShell.classList.add('has-live');
+    livePanel.classList.add('open');
+
+    const container = document.getElementById('liveVideoContainer');
+    container.innerHTML = '';
+
+    const domain = 'meet.jit.si';
+    const options = {
+      roomName: sessionData.jitsi_room_name,
+      width: '100%',
+      height: '100%',
+      parentNode: container,
+      userInfo: { displayName: myName }
+    };
+
+    function launch() {
+      jitsiApi = new JitsiMeetExternalAPI(domain, options);
+      jitsiApi.on('videoConferenceJoined', updateParticipantCount);
+      jitsiApi.on('participantJoined', updateParticipantCount);
+      jitsiApi.on('participantLeft', updateParticipantCount);
+    }
+
+    if (!window.JitsiMeetExternalAPI) {
+      const s = document.createElement('script');
+      s.src = 'https://meet.jit.si/external_api.js';
+      s.onload = launch;
+      document.body.appendChild(s);
+    } else {
+      launch();
+    }
+  }
+
+  function updateParticipantCount() {
+    if (!jitsiApi) return;
+    jitsiApi.getParticipantsInfo().then(list => {
+      liveParticipantCount.textContent = `${(list?.length || 0) + 1} in session`;
+    }).catch(() => {});
+  }
+
+  function closeLivePanel() {
+    roomShell.classList.remove('has-live');
+    livePanel.classList.remove('open');
+    if (jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
+    document.getElementById('liveVideoContainer').innerHTML = '';
+  }
+  closeLivePanelBtn.addEventListener('click', closeLivePanel);
+
+  // ═══════════════════════ IMAGE LIGHTBOX ═══════════════════════
+  function openLightbox(url, alt) {
+    lightboxImg.src = url;
+    lightboxImg.alt = alt || '';
+    lightboxOverlay.classList.add('open');
+  }
+  function closeLightbox() {
+    lightboxOverlay.classList.remove('open');
+    lightboxImg.src = '';
+  }
+  lightboxCloseBtn.addEventListener('click', closeLightbox);
+  lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) closeLightbox(); });
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+  function escapeAttr(str) { return escapeHtml(str); }
+
+  await loadChannels();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[FAFX] SW registered:', reg.scope))
+      .catch(err => console.log('[FAFX] SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
