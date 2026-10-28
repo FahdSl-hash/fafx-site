@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <link rel="manifest" href="/manifest.json"/>
   <meta name="theme-color" content="#098751"/>
@@ -111,8 +110,6 @@
   .channel-item.active { border-left: none; border-bottom-color: var(--green); }
   .sidebar-title { display: none; }
   .msg.is-reply { margin-left: 1rem; }
-  /* Floating WhatsApp/Telegram buttons (from main.js) sit on top of the composer on phones */
-  .float-btns { display: none; }
 }
 </style>
 </head>
@@ -322,4 +319,8 @@
         profiles:author_id ( full_name, role ),
         chat_attachments ( id, file_url, file_name, file_type ),
         chat_likes ( id, student_id ),
-        parent:parent_message_id ( id, body, profiles:autho
+        parent:parent_message_id ( id, body, profiles:author_id ( full_name ) )
+      `)
+      .eq('channel_id', activeChannel.id)
+      .eq('is_deleted', false)
+      .order('created_at'
